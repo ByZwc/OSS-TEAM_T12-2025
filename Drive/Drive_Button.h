@@ -1,0 +1,21 @@
+#ifndef __DRIVE_BUTTON_H__
+#define __DRIVE_BUTTON_H__
+
+#define DRIVE_BUTTON_GPIO_PORT      GPIOF
+#define DRIVE_BUTTON_GPIO_PIN       GPIO_PIN_2
+#define DRIVE_BUTTON_GPIO_PULL      GPIO_PULLUP
+#define DRIVE_BUTTON_GPIO_SPEED     GPIO_SPEED_FREQ_VERY_HIGH
+#define DRIVE_BUTTON_GPIO_MODE      GPIO_MODE_INPUT
+#define DRIVE_BUTTON_RCC_ENABLE()   __HAL_RCC_GPIOF_CLK_ENABLE()
+
+#define SLEEP_BUTTON_GPIO_PORT      GPIOA
+#define SLEEP_BUTTON_GPIO_PIN       GPIO_PIN_7
+#define SLEEP_BUTTON_GPIO_PULL      GPIO_PULLUP
+#define SLEEP_BUTTON_RCC_ENABLE()   __HAL_RCC_GPIOA_CLK_ENABLE()
+
+extern void Drive_BUTTON_Init(void);
+extern uint32_t Drive_BUTTON_GetState(void);
+extern uint32_t Drive_Sleep_GetState(void);
+
+#endif
+
