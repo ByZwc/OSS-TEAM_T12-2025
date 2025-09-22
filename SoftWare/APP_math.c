@@ -311,7 +311,7 @@ float32_t APP_GetElectricity_soft_Task()
 
 void app_Samp_electricity_Task(void)
 {
-    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) || HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7))
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5))
     {
         AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM] = Drive_ADCConvert(SOLDERING_ELECTRICITY_NUM);
         AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM] = 24.0 * GetLoadCurrent(AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM]) * 0.9f;

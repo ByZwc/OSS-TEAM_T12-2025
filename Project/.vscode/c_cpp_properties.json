@@ -3,17 +3,17 @@
         {
             "name": "Project",
             "includePath": [
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\BSP",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\CMSIS",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\Hardware",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\PY32F0xx_HAL_Driver\\Inc",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\SoftWare",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\System",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\User",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\Drive",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\BSP",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\CMSIS",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\Hardware",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\PY32F0xx_HAL_Driver\\Inc",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\SoftWare",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\System",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\User",
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\Drive",
                 "D:\\Keil Arm\\ARM\\ARMCC\\include",
                 "D:\\Keil Arm\\ARM\\ARMCC\\include\\rw",
-                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS-T12_2025_KeilProject\\PY32F0xx_HAL_Driver\\Src"
+                "g:\\63_ShuWEiTong\\03_OSS_TEM_T12\\OSS_TEM_T12\\PY32F0xx_HAL_Driver\\Src"
             ],
             "defines": [
                 "USE_HAL_DRIVER",
