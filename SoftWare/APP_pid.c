@@ -13,7 +13,6 @@ static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
     }
     else
     {
-        // 差值越大addCoef越大
         addCoef = AllStatus_S.pid_s.pid_pCoef * (diff - PID_PCMD_DIFF_THRESHOLD) / PID_PCMD_DIFF_THRESHOLD;
     }
 
