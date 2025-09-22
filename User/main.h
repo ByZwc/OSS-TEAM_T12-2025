@@ -112,8 +112,8 @@
 #define T245_PID_MAX_CHANGE_PRIOD 1000
 #define T12_PID_MAX_CHANGE_PRIOD 2200
 
-#define MAX_TAR_TEMP 800  // 目标温度最大值
-#define MIN_TAR_TEMP 30   // 目标温度最小值
+#define MAX_TAR_TEMP 450  // 目标温度最大值
+#define MIN_TAR_TEMP 105  // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
 #define N_TAR_TEMP_STEP 5 // 目标温度调节步进值
 
 #define CALIBRATION_TEMP_MAX 50  // 校准温度最大值
@@ -201,7 +201,7 @@ typedef struct
 typedef struct
 {
     uint32_t checkVlue;             // 校验值
-    uint32_t TarTemp;               // 目标温度（设置后1分钟掉电保存，保护flash寿命）(预设模式不保存)
+    uint32_t TarTemp;               // 目标温度（设置后1秒掉电保存，保护flash寿命）(预设模式不保存)
     int32_t calibration_temp;       // 校准温度值（修改后立即保存）
     uint32_t BuzOnOff;              // 蜂鸣器使能（修改后立即保存）
     uint32_t PreinstallTempOnOff;   // 预设温度使能（修改后立即保存）

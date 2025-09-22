@@ -486,14 +486,16 @@ void app_SolderingTempDisplay(void)
                 Lcd_smgDowm3_SetErrorNum(DRIVE_SLEEP, 1);
                 break;
             case SOLDERING_STATE_OK: // 正常状态
-                //Lcd_smgDowm3_SetHex(AllStatus_S.adc_filter_value);    //温度原始ADC值，带FIR滤波
-                Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1);    //估计值
+
+                // Lcd_smgDowm3_SetHex(AllStatus_S.adc_filter_value);    //温度原始ADC值，带FIR滤波
+                // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1);    //估计值
                 // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1);   // 实时值
-                
-                /* if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
+                //Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1); // 功率值(互补滤波)
+
+                if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
                     Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1);
                 else
-                    Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1); */
+                    Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1);
 
                 if (diff < 3.0f) // 首次到达温度蜂鸣器响应
                 {

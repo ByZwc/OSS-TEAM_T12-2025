@@ -1,0 +1,54 @@
+.\objects\py32f0xx_hal_msp.o: ..\System\py32f0xx_hal_msp.c
+.\objects\py32f0xx_hal_msp.o: ..\User\main.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal.h
+.\objects\py32f0xx_hal_msp.o: ..\System\py32f0xx_hal_conf.h
+.\objects\py32f0xx_hal_msp.o: ..\System\py32f0xx.h
+.\objects\py32f0xx_hal_msp.o: ..\System\py32f003x8.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\core_cm0plus.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\core_cmInstr.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\cmsis_armcc.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\core_cmFunc.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\Puya\PY32F0xx_DFP\1.2.3\Drivers\CMSIS\Device\PY32F0xx\Include\system_py32f0xx.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_rcc.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_def.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_rcc_ex.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_gpio.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_gpio_ex.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_cortex.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_dma.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_dma_ex.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_adc.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_flash.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_iwdg.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_pwr.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim_ex.h
+.\objects\py32f0xx_hal_msp.o: ..\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_uart.h
+.\objects\py32f0xx_hal_msp.o: ..\BSP\py32f003xx_Start_Kit.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\arm_math.h
+.\objects\py32f0xx_hal_msp.o: ..\CMSIS\core_cm0plus.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\ARM\ARMCC\Bin\..\include\string.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\ARM\ARMCC\Bin\..\include\math.h
+.\objects\py32f0xx_hal_msp.o: D:\Keil Arm\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\py32f0xx_hal_msp.o: ..\User\debug.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_uart.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_adc.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_BackLed.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_Button.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_Buz.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_clock.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_DesplayLcd.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_Encoder.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_MosSwitch.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_Iwdg.h
+.\objects\py32f0xx_hal_msp.o: ..\Drive\Drive_flash.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_displayLcd.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_TimeSlice.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_pid.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_math.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_HCI.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_Coder.h
+.\objects\py32f0xx_hal_msp.o: ..\SoftWare\APP_BuzMusic.h

@@ -137,8 +137,8 @@ static uint32_t median_filter(uint32_t input)
 #define ADC_REF_VOLTAGE 3.3f  // ADC基准电压(V)
 #define SAMPLE_RESISTOR 0.01f // 采样电阻(Ω)
 
-#define MAX_LIMITED_DIFF 20
-#define MAX_LIMITED_DIFF_LAST 1.0f
+#define MAX_LIMITED_DIFF 30
+#define MAX_LIMITED_DIFF_LAST 0.66f
 
 // 限幅滤波函数：抑制大幅脉冲干扰
 // 输入：当前ADC原始值；输出：限幅后的值
@@ -154,7 +154,7 @@ uint16_t LimitFilter(uint16_t current_adc)
     }
     else
     {
-        last_adc = current_adc;
+        last_adc = current_adc * MAX_LIMITED_DIFF_LAST;
         return current_adc;
     }
 }
@@ -187,8 +187,8 @@ uint16_t FIR_LowpassFilter(uint16_t limit_adc)
 }
 
 // 电流卡尔曼滤波器参数宏定义
-#define KALMAN_ELE_Q_MIN 0.0005f // 最小过程噪声
-#define KALMAN_ELE_R_MAX 800.0f  // 最大测量噪声
+#define KALMAN_ELE_Q_MIN 0.05f  // 最小过程噪声
+#define KALMAN_ELE_R_MAX 200.0f // 最大测量噪声
 
 // 电流卡尔曼滤波器
 static TYPEDEF_KALMAN_S kalman_ele_inst = {0.0f, 1.0f, 0.0f, KALMAN_ELE_Q_MIN, KALMAN_ELE_R_MAX, 0.0f};
@@ -276,8 +276,8 @@ float32_t APP_KalmanFilter_Power(float32_t measured_power, float32_t target_powe
     kalman_power_inst.diff = fabsf(measured_power - target_power);
 
     // 保持与原实现一致的固定噪声设定
-    kalman_power_inst.q = KALMAN_POWER_Q_MAX;
-    kalman_power_inst.r = KALMAN_POWER_R_MIN;
+    kalman_power_inst.q = KALMAN_POWER_Q_MIN;
+    kalman_power_inst.r = KALMAN_POWER_R_MAX;
 
     // 预测
     kalman_power_inst.p += kalman_power_inst.q;
@@ -293,18 +293,18 @@ float32_t APP_KalmanFilter_Power(float32_t measured_power, float32_t target_powe
 float32_t APP_GetElectricity_soft_Task()
 {
     static float32_t V0 = 24.0f;
-    static uint8_t StaticPower_flag = 0;
+    // static uint8_t StaticPower_flag = 0;
     float32_t R0 = AllStatus_S.r0;
-    float32_t electricity_inv;
+    // float32_t electricity_inv;
     float32_t Power;
-    Power = ((V0 / R0) * (AllStatus_S.pid_s.pid_out / 10000.0f) * V0) * APP_ParamToRatio(AllStatus_S.pid_s.pid_out, 3.0f) * 0.9f;
-    if ((Power < 10.0f) && (AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] <= (AllStatus_S.flashSave_s.TarTemp + 1)))
-        StaticPower_flag = 1;
+    Power = ((V0 / R0) * (AllStatus_S.pid_s.pid_out / 10000.0f) * V0 * 0.98f); // 估计功率W
+    /* if ((Power < 10.0f) && (AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] <= (AllStatus_S.flashSave_s.TarTemp + 1)))
+        StaticPower_flag = 0;
     else
         StaticPower_flag = 0;
-    electricity_inv = (AllStatus_S.PowerStatic * (AllStatus_S.flashSave_s.TarTemp / 450.0f) * StaticPower_flag); // 静态功率损耗
+    electricity_inv = (AllStatus_S.PowerStatic * (AllStatus_S.flashSave_s.TarTemp / 450.0f) * StaticPower_flag); // 静态功率损耗 */
     if (AllStatus_S.SolderingState == 0)
-        return APP_KalmanFilter_Power(Power + electricity_inv, 0.0f);
+        return APP_KalmanFilter_Power(Power, 0.0f);
     else
         return 0.0f;
 }
@@ -334,8 +334,8 @@ void app_GetAdcVlaue_electricity_Task(void)
 #define COMPLEMENTARY_FILTER_EST_WEIGHT_LOW 0.5f
 #define COMPLEMENTARY_FILTER_MEAS_WEIGHT_HIGH 0.5f
 
-#define COMPLEMENTARY_FILTER_EST_WEIGHT_HIGH 0.7f
-#define COMPLEMENTARY_FILTER_MEAS_WEIGHT_LOW 0.3f
+#define COMPLEMENTARY_FILTER_EST_WEIGHT_HIGH 0.8f
+#define COMPLEMENTARY_FILTER_MEAS_WEIGHT_LOW 0.2f
 
 #define COMPLEMENTARY_FILTER_VOLTAGE 24.0f
 
@@ -628,7 +628,7 @@ static void app_GetAdcVlaue_soldering(void)
     Drive_MosSwitch_OFF(); // 关断MOS输出
 
     // HAL_Delay(1);
-    for (uint16_t i = 0; i < 0xFFF; i++)
+    for (uint16_t i = 0; i < 0x8FF; i++)
     {
         __NOP();
     }
