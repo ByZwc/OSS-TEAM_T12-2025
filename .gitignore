@@ -43,11 +43,6 @@
 JLinkLog.txt
 
 # Other Files
-# .vscode/
-c_cpp_properties.json
-keil-assistant.log
-uv4.log
-uv4.log.lock
 
 # Debug Configuration Files
 *.dbgconf
