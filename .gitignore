@@ -32,7 +32,7 @@
 # Firmware Files
 *.bin
 *.h86
-*.hex
+# *.hex
 
 # Build Files
 .bat
