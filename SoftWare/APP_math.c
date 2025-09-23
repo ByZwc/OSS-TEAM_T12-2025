@@ -48,14 +48,12 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 }
 
 //*****************************************************************************************/
-#define KALMAN_Q_MIN_TEMP 0.3f
+#define KALMAN_Q_MIN_TEMP 1.0f
 #define KALMAN_Q_MAX_TEMP 3.0f
-#define KALMAN_R_MIN_TEMP 0.8f
-
+#define KALMAN_R_MIN_TEMP 12.0f
+#define KALMAN_R_MAX_TEMP 200.0f
+#define KALMAN_DIFF_THRESH_TEMP 20.0f
 static TYPEDEF_KALMAN_S kalman_temp_inst = {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-
-#define KALMAN_R_MAX_TEMP 6.0f
-#define KALMAN_DIFF_THRESH_TEMP 25.0f
 
 float32_t APP_kalmanFilter_solderingTemp(float32_t input, float32_t target)
 {
@@ -64,15 +62,11 @@ float32_t APP_kalmanFilter_solderingTemp(float32_t input, float32_t target)
         // 温度超限，直接重置滤波结果
         kalman_temp_inst.x = input;
         kalman_temp_inst.p = 1.0f;
-        kalman_temp_inst.diff = 0.0f;
-        kalman_temp_inst.q = 0.0f;
-        kalman_temp_inst.r = 0.0f;
-        kalman_temp_inst.k = 0.0f;
         return kalman_temp_inst.x;
     }
 
     // 采样与设定温度差异
-    kalman_temp_inst.diff = fabsf(input - target);
+    /* kalman_temp_inst.diff = fabsf(input - target);
 
     if (kalman_temp_inst.diff < KALMAN_DIFF_THRESH_TEMP)
     {
@@ -80,10 +74,10 @@ float32_t APP_kalmanFilter_solderingTemp(float32_t input, float32_t target)
         kalman_temp_inst.r = KALMAN_R_MIN_TEMP + (KALMAN_R_MAX_TEMP - KALMAN_R_MIN_TEMP) * (kalman_temp_inst.diff / KALMAN_DIFF_THRESH_TEMP);
     }
     else
-    {
-        kalman_temp_inst.q = KALMAN_Q_MAX_TEMP;
-        kalman_temp_inst.r = KALMAN_R_MAX_TEMP;
-    }
+    { */
+    kalman_temp_inst.q = KALMAN_Q_MAX_TEMP;
+    kalman_temp_inst.r = KALMAN_R_MAX_TEMP;
+    //}
 
     kalman_temp_inst.p += kalman_temp_inst.q;
     kalman_temp_inst.k = kalman_temp_inst.p / (kalman_temp_inst.p + kalman_temp_inst.r);
@@ -342,13 +336,13 @@ float APP_Power_complementaryFilter_Task(void)
 
     if (measPower > COMPLEMENTARY_FILTER_HIGH_POWER_THRESH) // 测量功率>200W：提高测量信任度
     {
-        weight_est = COMPLEMENTARY_FILTER_EST_WEIGHT_LOW;   
-        weight_meas = COMPLEMENTARY_FILTER_MEAS_WEIGHT_HIGH; 
+        weight_est = COMPLEMENTARY_FILTER_EST_WEIGHT_LOW;
+        weight_meas = COMPLEMENTARY_FILTER_MEAS_WEIGHT_HIGH;
     }
-    else 
+    else
     {
-        weight_est = COMPLEMENTARY_FILTER_EST_WEIGHT_HIGH;  
-        weight_meas = COMPLEMENTARY_FILTER_MEAS_WEIGHT_LOW; 
+        weight_est = COMPLEMENTARY_FILTER_EST_WEIGHT_HIGH;
+        weight_meas = COMPLEMENTARY_FILTER_MEAS_WEIGHT_LOW;
     }
 
     // 2. 互补滤波核心计算（权重加权求和）
@@ -593,8 +587,8 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 135.0f;
-        AllStatus_S.pid_s.pid_iCoef = 10.5f;
+        AllStatus_S.pid_s.pid_pCoef = 90.0f;
+        AllStatus_S.pid_s.pid_iCoef = 2.5f;
         AllStatus_S.pid_s.pid_dCoef = 0.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
@@ -602,7 +596,7 @@ void APP_shortCircuitProtection(void)
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
         AllStatus_S.pid_s.pid_iItemJoinTemp = 35;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 15;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 45;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.800f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
@@ -624,7 +618,7 @@ static void app_GetAdcVlaue_soldering(void)
     }
 
     AllStatus_S.adc_value[SOLDERING_TEMP210_NUM] = Drive_ADCConvert(SOLDERING_TEMP210_NUM);
-    AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
+    // AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
     switch (AllStatus_S.SolderingModelNumber)
     {
     case SOLDERING_MODEL_T115:

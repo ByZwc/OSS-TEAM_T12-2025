@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define PID_PCMD_DIFF_THRESHOLD 30.0f // 超过此温差才增加P系数
+#define PID_PCMD_DIFF_THRESHOLD 15.0f // 超过此温差才增加P系数
 
 static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 {
@@ -36,17 +36,14 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
         break;
     }
 
-    if (CurTemp > (TarTemp + AllStatus_S.pid_s.pid_iItemQuitTemp))
+    if (diff > AllStatus_S.pid_s.pid_iItemQuitTemp || (CurTemp > TarTemp + 15.0f))
     {
         AllStatus_S.pid_s.pid_iItem = 0.0f;
-        AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
+        AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
     }
     else
     {
-        if (CurTemp > (TarTemp - AllStatus_S.pid_s.pid_iItemJoinTemp) && (CurTemp < TarTemp))
-        {
-            AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
-        }
+        AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
     }
 
     app_pidOutCmd();
