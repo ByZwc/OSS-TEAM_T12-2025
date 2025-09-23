@@ -41,7 +41,6 @@
 #include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
-#include "debug.h"
 #include "Drive_uart.h"
 #include "Drive_adc.h"
 #include "Drive_BackLed.h"

@@ -27,6 +27,7 @@
 *.o
 *.obj
 *.sbr
+*.sct
 
 # Firmware Files
 *.bin
