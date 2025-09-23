@@ -66,8 +66,8 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
 
         if (AllStatus_S.pid_s.pid_iItem > AllStatus_S.pid_s.pid_integration_max)
             AllStatus_S.pid_s.pid_iItem = AllStatus_S.pid_s.pid_integration_max;
-        if (AllStatus_S.pid_s.pid_iItem < -AllStatus_S.pid_s.pid_integration_max)
-            AllStatus_S.pid_s.pid_iItem = -AllStatus_S.pid_s.pid_integration_max;
+        if (AllStatus_S.pid_s.pid_iItem < 0)
+            AllStatus_S.pid_s.pid_iItem = 0;
 
         AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_pItem + AllStatus_S.pid_s.pid_iItem + AllStatus_S.pid_s.pid_dItem;
 

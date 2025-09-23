@@ -3,6 +3,7 @@
 # ?Vision 5 and ?Vision 4 Project screen layout file
 *.uvguix.*
 *.uvgui.*
+*.scvd
 
 # Listing Files
 *.i
