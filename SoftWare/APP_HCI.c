@@ -64,35 +64,43 @@ void app_exitSeting_Lcd(void)
 }
 
 // 编码器快速调温相关宏定义
-#define ENCODER_FASTSET_TIME_WINDOW_MS 1000 // 基础时间窗口（ms），每增加一个等级扩展一个窗口
+#define ENCODER_FASTSET_TIME_WINDOW_MS 500 // 基础时间窗口（ms），每增加一个等级扩展一个窗口
 #define ENCODER_FASTSET_BUCKET_SIZE 3       // 每个等级所需的次数（3次/等级）
 #define ENCODER_FASTSET_STEP_UNIT 5         // 步进单位（5,10,15,20,25）
 #define ENCODER_FASTSET_MAX_LEVEL 5         // 最大等级（1..5），对应最大返回值25
 
 uint8_t app_Encoder_FastSetTemp(void)
 {
-    // 记录连续旋转的起始时间与次数；只要间隔不超过 MAX_LEVEL * WINDOW，就认为是一次连续操作序列
-    static uint32_t window_start_tick = 0;
-    static uint16_t count_in_window = 0;
+    // 简化逻辑：使用单一滚动窗口计数器（window = ENCODER_FASTSET_TIME_WINDOW_MS）。
+    // 每次调用若与上次调用间隔小于窗口则累加计数，否则重置为1。
+    // 当累积计数 <= BUCKET_SIZE 时返回最小步进，超过则按每 BUCKET_SIZE 次提升一级，最高 ENCODER_FASTSET_MAX_LEVEL。
+
+    static uint32_t last_tick = 0;   // 上次旋转时间
+    static uint16_t acc_count = 0;   // 在窗口内的连续旋转计数
+
     uint32_t now_tick = uwTick;
+    uint32_t window = ENCODER_FASTSET_TIME_WINDOW_MS; // 1000 ms
 
-    uint32_t max_continuous_window = ENCODER_FASTSET_TIME_WINDOW_MS * ENCODER_FASTSET_MAX_LEVEL;
-
-    // 首次或超出最长连续时间则重置序列
-    if (window_start_tick == 0 || (uint32_t)(now_tick - window_start_tick) > max_continuous_window)
+    // 如果是第一次或超出窗口，重置为 1（当前这次计为第1次）
+    if (last_tick == 0 || (now_tick - last_tick) > window)
     {
-        window_start_tick = now_tick;
-        count_in_window = 1;
+        acc_count = 1;
     }
     else
     {
-        // 在连续序列内，增加计数并保持起始时间不变（以保证随次数增长等级上升）
-        if (count_in_window < 0xFFFF)
-            count_in_window++;
+        if (acc_count < 0xFFFF)
+            acc_count++;
+    }
+    last_tick = now_tick;
+
+    // 在每个等级需要 ENCODER_FASTSET_BUCKET_SIZE 次旋转之前，保持最小步进
+    if (acc_count <= ENCODER_FASTSET_BUCKET_SIZE)
+    {
+        return ENCODER_FASTSET_STEP_UNIT; // 5
     }
 
-    // 计算等级：每 ENCODER_FASTSET_BUCKET_SIZE 次提升一级
-    uint16_t level = (count_in_window + (ENCODER_FASTSET_BUCKET_SIZE - 1)) / ENCODER_FASTSET_BUCKET_SIZE;
+    // 计算等级：每 ENCODER_FASTSET_BUCKET_SIZE 次提升一级（向上取整）
+    uint16_t level = (acc_count + (ENCODER_FASTSET_BUCKET_SIZE - 1)) / ENCODER_FASTSET_BUCKET_SIZE;
     if (level < 1)
         level = 1;
     if (level > ENCODER_FASTSET_MAX_LEVEL)
