@@ -61,6 +61,7 @@
 #include "APP_HCI.h"
 #include "APP_Coder.h"
 #include "APP_BuzMusic.h"
+#include "APP_Sleep.h"
 
 /* Private defines -----------------------------------------------------------*/
 #define DEBUG_TAG "OSS-T210"
@@ -71,13 +72,14 @@
 #define FLASH_USER_START_ADDR2 0x0800F800
 #define FLASH_USER_START_ADDR3 0x0800FF00
 
-#define ADC_CHANNEL_NUM 5 // 通道数
+#define ADC_CHANNEL_NUM 8 // 通道数
 
 #define PCB_NTC_NUM 0               // ADC序号
 #define SOLDERING_ELECTRICITY_NUM 1 // ADC序号
 #define SOLDERING_TEMP210_NUM 2     // ADC序号
 #define SOLDERING_TEMP245_NUM 3     // ADC序号
 #define SOLDERING_TID_NUM 4         // ADC序号
+#define SLEEP_NUM 7                 // ADC序号
 
 #define BUZ_ON_TIME 2 // 单位：25ms(蜂鸣器)
 // #define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
@@ -88,7 +90,7 @@
 
 // 积分限幅
 #define T210_MAX_PID_I 2250 // 60W
-#define T245_MAX_PID_I 5000 // 110W ±10W
+#define T245_MAX_PID_I 3000 // 110W ±10W
 #define T115_MAX_PID_I 750  // 30W
 
 // 功率限幅
@@ -103,13 +105,13 @@
 #define T115_PID_MIX_CHANGE_PRIOD 100
 #define T210_PID_MIX_CHANGE_PRIOD 200
 #define T245_PID_MIX_CHANGE_PRIOD 700
-#define T12_PID_MIX_CHANGE_PRIOD 1400
+#define T12_PID_MIX_CHANGE_PRIOD 1900
 
 // 显示稳定滤波突变值
 #define T115_PID_MAX_CHANGE_PRIOD 150
 #define T210_PID_MAX_CHANGE_PRIOD 200
 #define T245_PID_MAX_CHANGE_PRIOD 1000
-#define T12_PID_MAX_CHANGE_PRIOD 1500
+#define T12_PID_MAX_CHANGE_PRIOD 2000
 
 #define MAX_TAR_TEMP 450  // 目标温度最大值
 #define MIN_TAR_TEMP 105  // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
@@ -117,6 +119,8 @@
 
 #define CALIBRATION_TEMP_MAX 50  // 校准温度最大值
 #define CALIBRATION_TEMP_MIN -50 // 校准温度最小值
+#define SLEEP_DELAY_TIME_MIN 60  // 休眠延时最小值
+#define SLEEP_DELAY_TIME_MAX 999 // 休眠延时最大值
 
 #define SOLDERING_PID_I_CMD 15          // 积分引入温度阈值
 #define SOLDERING_PID_I_CLOSE 15        // 积分引出温度阈值
@@ -147,8 +151,8 @@
 #define SMG_P01 1    // 选项P01(蜂鸣器开关)
 #define SMG_P02 2    // 选项P02(预设温度开关)
 #define SMG_P03 3    // 选项P03(校准温度)
-#define SMG_P04 4    // 选项P04(睡眠低于100℃后60s关闭背光)
-#define SMG_P05 5    // 选项P05(T245最大功率补偿)
+#define SMG_P04 4    // 选项P04(睡眠状态下，低于100℃后60s关闭背光)
+#define SMG_P05 5    // 选项P05(进入休眠等待时间60——999秒)
 #define SMG_P06 6    // 切换功率显示
 
 #define SMG_OFF 0
@@ -199,16 +203,16 @@ typedef struct
 
 typedef struct
 {
-    uint32_t checkVlue;             // 校验值
-    uint32_t TarTemp;               // 目标温度（设置后3秒掉电保存，保护flash寿命）(预设模式不保存)
-    int32_t calibration_temp;       // 校准温度值（修改后立即保存）
-    uint32_t BuzOnOff;              // 蜂鸣器使能（修改后立即保存）
-    uint32_t PreinstallTempOnOff;   // 预设温度使能（修改后立即保存）
-    uint32_t PreinstallTempNum;     // 预设温度编号（修改后立即保存）
-    uint32_t BackgroundLightOnoff;  // 睡眠关闭背光（修改后立即保存）
-    uint32_t T245PowerCompensation; // T245功率补偿（修改后立即保存）单位W
-    uint32_t DisplayPowerOnOff;     // 功率显示开关（修改后立即保存）
-    uint32_t SaveNum;               // 保存次数
+    uint32_t checkVlue;            // 校验值
+    uint32_t TarTemp;              // 目标温度（设置后3秒掉电保存，保护flash寿命）(预设模式不保存)
+    int32_t calibration_temp;      // 校准温度值（修改后立即保存）
+    uint32_t BuzOnOff;             // 蜂鸣器使能（修改后立即保存）
+    uint32_t PreinstallTempOnOff;  // 预设温度使能（修改后立即保存）
+    uint32_t PreinstallTempNum;    // 预设温度编号（修改后立即保存）
+    uint32_t BackgroundLightOnoff; // 睡眠关闭背光（修改后立即保存）
+    uint32_t SleepDelayTime;       // 休眠时间（修改后立即保存）单位s
+    uint32_t DisplayPowerOnOff;    // 功率显示开关（修改后立即保存）
+    uint32_t SaveNum;              // 保存次数
 } TYPEDEF_FLASHSAVE_S;
 
 typedef struct

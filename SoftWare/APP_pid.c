@@ -36,7 +36,7 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
         break;
     }
 
-    if (diff > AllStatus_S.pid_s.pid_iItemQuitTemp || (CurTemp > TarTemp + 15.0f))
+    if (diff > AllStatus_S.pid_s.pid_iItemQuitTemp)
     {
         AllStatus_S.pid_s.pid_iItem = 0.0f;
         AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
@@ -66,8 +66,8 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
 
         if (AllStatus_S.pid_s.pid_iItem > AllStatus_S.pid_s.pid_integration_max)
             AllStatus_S.pid_s.pid_iItem = AllStatus_S.pid_s.pid_integration_max;
-        if (AllStatus_S.pid_s.pid_iItem < 0)
-            AllStatus_S.pid_s.pid_iItem = 0;
+        if (AllStatus_S.pid_s.pid_iItem < (-AllStatus_S.pid_s.pid_integration_max))
+            AllStatus_S.pid_s.pid_iItem = -AllStatus_S.pid_s.pid_integration_max;
 
         AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_pItem + AllStatus_S.pid_s.pid_iItem + AllStatus_S.pid_s.pid_dItem;
 

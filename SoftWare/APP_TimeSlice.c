@@ -3,7 +3,7 @@
 #define PID_TASK_INTERVAL 10
 #define ENCODER_TASK_INTERVAL 50
 #define BUTTON_TASK_INTERVAL 100
-#define SLEEP_TASK_INTERVAL 300
+#define SLEEP_TASK_INTERVAL 500
 #define ICON_BLINK_TASK_INTERVAL 1000
 void app_timeSlice_Task(void)
 {
@@ -31,6 +31,7 @@ void app_timeSlice_Task(void)
     {
         last_sleepTick += SLEEP_TASK_INTERVAL;
         app_Lcd_SleepStateCheck_Task(); // 休眠状态检查任务
+        APP_Sleep_Control_Task();        // 休眠ADC采样任务
         HAL_IWDG_Refresh(&IwdgHandle);  // 清看门狗
     }
 

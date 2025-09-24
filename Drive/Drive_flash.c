@@ -155,15 +155,15 @@ static void Drive_FlashRed(TYPEDEF_FLASHSAVE_S *P_flashSave_s)
     AllStatus_S.flashSave_s.PreinstallTempOnOff = P_flashSave_s->PreinstallTempOnOff;
     AllStatus_S.flashSave_s.PreinstallTempNum = P_flashSave_s->PreinstallTempNum;
     AllStatus_S.flashSave_s.BackgroundLightOnoff = P_flashSave_s->BackgroundLightOnoff;
-    AllStatus_S.flashSave_s.T245PowerCompensation = P_flashSave_s->T245PowerCompensation;
+    AllStatus_S.flashSave_s.SleepDelayTime = P_flashSave_s->SleepDelayTime;
     AllStatus_S.flashSave_s.SaveNum = P_flashSave_s->SaveNum;
     AllStatus_S.flashSave_s.DisplayPowerOnOff = P_flashSave_s->DisplayPowerOnOff;
     if (AllStatus_S.flashSave_s.TarTemp < (MIN_TAR_TEMP - 5) || AllStatus_S.flashSave_s.TarTemp > MAX_TAR_TEMP)
         AllStatus_S.flashSave_s.TarTemp = FIRST_SOLDERING_TEMP;
     if (AllStatus_S.flashSave_s.calibration_temp < (CALIBRATION_TEMP_MIN) || AllStatus_S.flashSave_s.calibration_temp > (CALIBRATION_TEMP_MAX))
         AllStatus_S.flashSave_s.calibration_temp = 0;
-    if (AllStatus_S.flashSave_s.T245PowerCompensation > T245_POWER_COMPENSATION_MAX)
-        AllStatus_S.flashSave_s.T245PowerCompensation = 0;
+    if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX || AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MIN)
+        AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
     if (AllStatus_S.flashSave_s.PreinstallTempNum > 4)
         AllStatus_S.flashSave_s.PreinstallTempNum = 1;
     if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
@@ -197,7 +197,7 @@ static void Drive_FlashVerify(void)
         AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         AllStatus_S.flashSave_s.PreinstallTempNum = 1;
         AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
-        AllStatus_S.flashSave_s.T245PowerCompensation = 0;
+        AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
         AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         AllStatus_S.flashSave_s.SaveNum = 0;
         Drive_FlashSaveData();

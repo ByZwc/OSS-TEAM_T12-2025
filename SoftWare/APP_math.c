@@ -49,7 +49,7 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 
 //*****************************************************************************************/
 #define KALMAN_Q_MIN_TEMP 1.0f
-#define KALMAN_Q_MAX_TEMP 3.0f
+#define KALMAN_Q_MAX_TEMP 50.0f
 #define KALMAN_R_MIN_TEMP 12.0f
 #define KALMAN_R_MAX_TEMP 200.0f
 #define KALMAN_DIFF_THRESH_TEMP 20.0f
@@ -588,15 +588,15 @@ void APP_shortCircuitProtection(void)
         break;
     case SOLDERING_MODEL_T245:
         AllStatus_S.pid_s.pid_pCoef = 90.0f;
-        AllStatus_S.pid_s.pid_iCoef = 2.5f;
-        AllStatus_S.pid_s.pid_dCoef = 0.0f;
+        AllStatus_S.pid_s.pid_iCoef = 0.5f;
+        AllStatus_S.pid_s.pid_dCoef = 10.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
         AllStatus_S.pid_s.pid_iItemJoinTemp = 35;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 45;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 35;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.800f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
@@ -632,10 +632,10 @@ static void app_GetAdcVlaue_soldering(void)
         break;
     }
 
-    if (AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] > SOLDERING_TEMP_OPEN)
+    /* if (AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] > SOLDERING_TEMP_OPEN)
     {
         AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] = SOLDERING_TEMP_OPEN;
-    }
+    } */
 
     AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] = APP_kalmanFilter_solderingTemp(AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM], AllStatus_S.flashSave_s.TarTemp);
     AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];

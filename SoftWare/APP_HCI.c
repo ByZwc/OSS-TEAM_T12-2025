@@ -27,7 +27,7 @@ void app_joinSeting_Lcd(void)
         break;
     case SMG_P05:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.T245PowerCompensation, 1);
+        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
         break;
     case SMG_P06:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
@@ -205,15 +205,15 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
     case SMG_P05:
         if (addOrSub)
         {
-            if (AllStatus_S.flashSave_s.T245PowerCompensation < T245_POWER_COMPENSATION_MAX)
-                AllStatus_S.flashSave_s.T245PowerCompensation++;
+            if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.SleepDelayTime++;
         }
         else
         {
-            if (AllStatus_S.flashSave_s.T245PowerCompensation > 0)
-                AllStatus_S.flashSave_s.T245PowerCompensation--;
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN)
+                AllStatus_S.flashSave_s.SleepDelayTime--;
         }
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.T245PowerCompensation, 1);
+        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
         break;
     case SMG_P06:
         if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
@@ -266,7 +266,7 @@ void app_Lcd_DisplayPNumber_SettingPage(uint8_t addOrSub)
         break;
     case SMG_P05:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.T245PowerCompensation, 1);
+        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
         break;
     case SMG_P06:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
@@ -349,11 +349,10 @@ void app_Lcd_SleepStateCheck_Task(void) // 函数调用周期（500ms）
     static uint8_t oneState = 0;
     static uint8_t errorFlag = 0;
     static uint8_t oneState_deepSleep = 0;
-    if (Drive_Sleep_GetState())
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
     {
         if (!oneState)
         {
-            AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP;
             Lcd_icon_onOff(icon_soldering, 1);
             app_pidOutCmd();
             Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
@@ -490,14 +489,15 @@ void app_SolderingTempDisplay(void)
                 // Lcd_smgDowm3_SetHex(AllStatus_S.adc_filter_value);    //温度原始ADC值，带FIR滤波
                 // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1);    //估计值
                 // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1);   // 实时值
-                //Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1); // 功率值(互补滤波)
+                // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1); // 功率值(互补滤波)
+                // Lcd_smgDowm3_SetHex(AllStatus_S.adc_value[SLEEP_NUM]); // 睡眠ADC值
 
                 if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
                     Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1);
                 else
                     Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1);
 
-                if (diff < 3.0f) // 首次到达温度蜂鸣器响应
+                if (diff < 1.0f) // 首次到达温度蜂鸣器响应
                 {
                     if (!AllStatus_S.OneState_TempOk)
                         Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);

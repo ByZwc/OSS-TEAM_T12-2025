@@ -371,7 +371,7 @@ static void touchBuzzerSpeak_1S(void)
     if (temp == 1)
         touchBuzzerSpeak_L1();
 
-    if (temp >= 80)
+    if (temp >= 50)
     {
         AllStatus_S.BuzmusicNum = BUZ_MUSIC_OFF;
         set_beep(0);
