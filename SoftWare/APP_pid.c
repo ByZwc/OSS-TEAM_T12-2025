@@ -101,6 +101,7 @@ void app_pidOutCmd(void)
     if (AllStatus_S.SolderingState > SOLDERING_STATE_OK)
     {
         AllStatus_S.pid_s.outCmd = 0;
+        AllStatus_S.pid_s.pid_out = 0.0f;
         AllStatus_S.pid_s.pid_iItem = 0.0f;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         TIM3->CCR2 = 0;

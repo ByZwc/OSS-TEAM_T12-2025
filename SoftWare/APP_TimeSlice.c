@@ -3,7 +3,7 @@
 #define PID_TASK_INTERVAL 10
 #define ENCODER_TASK_INTERVAL 50
 #define BUTTON_TASK_INTERVAL 100
-#define SLEEP_TASK_INTERVAL 500
+#define SLEEP_TASK_INTERVAL 250
 #define ICON_BLINK_TASK_INTERVAL 1000
 void app_timeSlice_Task(void)
 {
@@ -30,9 +30,9 @@ void app_timeSlice_Task(void)
     if (uwTick - last_sleepTick >= SLEEP_TASK_INTERVAL)
     {
         last_sleepTick += SLEEP_TASK_INTERVAL;
-        app_Lcd_SleepStateCheck_Task(); // 休眠状态检查任务
-        APP_Sleep_Control_Task();        // 休眠ADC采样任务
-        HAL_IWDG_Refresh(&IwdgHandle);  // 清看门狗
+        APP_SolderingOpenStateCheck_Task(); // 拔出烙铁头或短路检测任务
+        APP_Sleep_Control_Task();           // 休眠ADC采样任务
+        HAL_IWDG_Refresh(&IwdgHandle);      // 清看门狗
     }
 
     if (uwTick - last_IconBlinkTick >= ICON_BLINK_TASK_INTERVAL)

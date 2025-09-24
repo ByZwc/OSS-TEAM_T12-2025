@@ -132,7 +132,7 @@ static uint32_t median_filter(uint32_t input)
 #define SAMPLE_RESISTOR 0.01f // 采样电阻(Ω)
 
 #define MAX_LIMITED_DIFF 30
-#define MAX_LIMITED_DIFF_LAST 0.66f
+#define MAX_LIMITED_DIFF_LAST 0.70f
 
 // 限幅滤波函数：抑制大幅脉冲干扰
 // 输入：当前ADC原始值；输出：限幅后的值
@@ -588,8 +588,8 @@ void APP_shortCircuitProtection(void)
         break;
     case SOLDERING_MODEL_T245:
         AllStatus_S.pid_s.pid_pCoef = 90.0f;
-        AllStatus_S.pid_s.pid_iCoef = 0.5f;
-        AllStatus_S.pid_s.pid_dCoef = 10.0f;
+        AllStatus_S.pid_s.pid_iCoef = 2.5f;
+        AllStatus_S.pid_s.pid_dCoef = 25.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
@@ -598,7 +598,7 @@ void APP_shortCircuitProtection(void)
         AllStatus_S.pid_s.pid_iItemJoinTemp = 35;
         AllStatus_S.pid_s.pid_iItemQuitTemp = 35;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
-        AllStatus_S.r0 = 7.800f;        // T12阻值
+        AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
         Drive_MosSwitch245_PWMOut();    // 开启245PWM输出
         break;

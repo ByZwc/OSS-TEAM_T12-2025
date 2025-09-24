@@ -342,71 +342,20 @@ void app_Lcd_SolderingIcon_Blink_Task(void) // 函数调用周期（50ms）
     }
 }
 
-#define SLEEP_TEMP_RANGE 100
-
-void app_Lcd_SleepStateCheck_Task(void) // 函数调用周期（500ms）
+void APP_SolderingOpenStateCheck_Task(void) // 函数调用周期（500ms）
 {
-    static uint8_t oneState = 0;
-    static uint8_t errorFlag = 0;
-    static uint8_t oneState_deepSleep = 0;
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
-        if (!oneState)
+        if (AllStatus_S.CurTemp >= SOLDERING_TEMP_OPEN)
         {
-            Lcd_icon_onOff(icon_soldering, 1);
-            app_pidOutCmd();
-            Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-            if (!AllStatus_S.Seting.SetingPage)
-                Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
-            oneState = 1;
-        }
-
-        if (AllStatus_S.CurTemp < SLEEP_TEMP_RANGE)
-        {
-            if (!oneState_deepSleep)
-            {
-                oneState_deepSleep = 1;
-                AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
-            }
+            AllStatus_S.SolderingState = SOLDERING_STATE_PULL_OUT_ERROR;
+            Drive_Buz_OnOff(BUZ_1S, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
         }
     }
     else
     {
-        if (oneState)
-        {
-            oneState = 0;
-            oneState_deepSleep = 0;
-            Drive_BackLed_OnOff(1); // 点亮背光
-            AllStatus_S.SolderingState = SOLDERING_STATE_OK;
-            Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-            Lcd_icon_onOff(icon_soldering, 0);
-            if (!AllStatus_S.Seting.SetingPage)
-            {
-                if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
-                    Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-                else
-                    Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
-            }
-        }
-        if (AllStatus_S.CurTemp >= SOLDERING_TEMP_OPEN)
-        {
-            AllStatus_S.SolderingState = SOLDERING_STATE_PULL_OUT_ERROR;
-            if (!errorFlag)
-            {
-                Drive_Buz_OnOff(BUZ_1S, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-            }
-            errorFlag = 1;
-            // APP_ErrorHandler();
-        }
-        else
-        {
-            if (errorFlag)
-            {
-                APP_shortCircuitProtection();
-                // HAL_Delay(500);
-                errorFlag = 0;
-            }
-        }
+        if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
+            APP_shortCircuitProtection();
     }
 }
 

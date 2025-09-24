@@ -117,10 +117,11 @@
 #define MIN_TAR_TEMP 105  // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
 #define N_TAR_TEMP_STEP 5 // 目标温度调节步进值
 
-#define CALIBRATION_TEMP_MAX 50  // 校准温度最大值
-#define CALIBRATION_TEMP_MIN -50 // 校准温度最小值
-#define SLEEP_DELAY_TIME_MIN 60  // 休眠延时最小值
-#define SLEEP_DELAY_TIME_MAX 999 // 休眠延时最大值
+#define CALIBRATION_TEMP_MAX 50   // 校准温度最大值
+#define CALIBRATION_TEMP_MIN -50  // 校准温度最小值
+#define SLEEP_DELAY_TIME_MIN 60   // 休眠延时最小值
+#define SLEEP_DELAY_TIME_MAX 999  // 休眠延时最大值
+#define SLEEP_DEEP_TEMP_RANGE 100 // 深度休眠温度阈值
 
 #define SOLDERING_PID_I_CMD 15          // 积分引入温度阈值
 #define SOLDERING_PID_I_CLOSE 15        // 积分引出温度阈值
@@ -229,7 +230,7 @@ typedef enum
     SOLDERING_STATE_SHORTCIR_ERROR, // 短路状态
     SOLDERING_STATE_OPEN_ERROR,     // 开路状态
     SOLDERING_STATE_SLEEP,          // 睡眠状态
-    SOLDERING_STATE_SLEEP_DEEP,     // 睡眠状态
+    SOLDERING_STATE_SLEEP_DEEP,     // 深度睡眠状态
     SOLDERING_STATE_NTC_ERROR,      // NTC错误状态
     SOLDERING_STATE_PULL_OUT_ERROR  // 拔出错误状态
 } TYPEDEF_SOLDERING_STATE_S;
