@@ -71,17 +71,12 @@ void app_exitSeting_Lcd(void)
 
 uint8_t app_Encoder_FastSetTemp(void)
 {
-    // 简化逻辑：使用单一滚动窗口计数器（window = ENCODER_FASTSET_TIME_WINDOW_MS）。
-    // 每次调用若与上次调用间隔小于窗口则累加计数，否则重置为1。
-    // 当累积计数 <= BUCKET_SIZE 时返回最小步进，超过则按每 BUCKET_SIZE 次提升一级，最高 ENCODER_FASTSET_MAX_LEVEL。
-
     static uint32_t last_tick = 0;   // 上次旋转时间
     static uint16_t acc_count = 0;   // 在窗口内的连续旋转计数
 
     uint32_t now_tick = uwTick;
-    uint32_t window = ENCODER_FASTSET_TIME_WINDOW_MS; // 1000 ms
+    uint32_t window = ENCODER_FASTSET_TIME_WINDOW_MS; // 500 ms
 
-    // 如果是第一次或超出窗口，重置为 1（当前这次计为第1次）
     if (last_tick == 0 || (now_tick - last_tick) > window)
     {
         acc_count = 1;
@@ -93,13 +88,11 @@ uint8_t app_Encoder_FastSetTemp(void)
     }
     last_tick = now_tick;
 
-    // 在每个等级需要 ENCODER_FASTSET_BUCKET_SIZE 次旋转之前，保持最小步进
     if (acc_count <= ENCODER_FASTSET_BUCKET_SIZE)
     {
         return ENCODER_FASTSET_STEP_UNIT; // 5
     }
 
-    // 计算等级：每 ENCODER_FASTSET_BUCKET_SIZE 次提升一级（向上取整）
     uint16_t level = (acc_count + (ENCODER_FASTSET_BUCKET_SIZE - 1)) / ENCODER_FASTSET_BUCKET_SIZE;
     if (level < 1)
         level = 1;
@@ -107,7 +100,7 @@ uint8_t app_Encoder_FastSetTemp(void)
         level = ENCODER_FASTSET_MAX_LEVEL;
 
     uint8_t step = (uint8_t)(level * ENCODER_FASTSET_STEP_UNIT);
-    return step; // 返回 5,10,15,20 或 25
+    return step; 
 }
 
 // 普通模式或预设温度模式
