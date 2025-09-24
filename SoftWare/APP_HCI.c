@@ -64,62 +64,42 @@ void app_exitSeting_Lcd(void)
 }
 
 // 编码器快速调温相关宏定义
-#define ENCODER_FASTSET_MAX_STEP 20         // 最快转动返回值
-#define ENCODER_FASTSET_HIGH_STEP 15        // 第二秒持续快速返回值
-#define ENCODER_FASTSET_MID_STEP 10         // 第一秒快速返回值
-#define ENCODER_FASTSET_SLOW_STEP 5         // 慢速转动返回值
-#define ENCODER_FASTSET_FAST_THRESHOLD 3    // 1秒内转动超过3次判定为快速
-#define ENCODER_FASTSET_TIME_WINDOW_MS 1000 // 时间窗口（ms）
+#define ENCODER_FASTSET_TIME_WINDOW_MS 1000 // 基础时间窗口（ms），每增加一个等级扩展一个窗口
+#define ENCODER_FASTSET_BUCKET_SIZE 3       // 每个等级所需的次数（3次/等级）
+#define ENCODER_FASTSET_STEP_UNIT 5         // 步进单位（5,10,15,20,25）
+#define ENCODER_FASTSET_MAX_LEVEL 5         // 最大等级（1..5），对应最大返回值25
 
 uint8_t app_Encoder_FastSetTemp(void)
 {
+    // 记录连续旋转的起始时间与次数；只要间隔不超过 MAX_LEVEL * WINDOW，就认为是一次连续操作序列
     static uint32_t window_start_tick = 0;
-    static uint8_t count_in_window = 0;
-    static uint8_t fast_level = 0; // 0:慢速, 1:快速, 2:持续快速, 3:最快
+    static uint16_t count_in_window = 0;
     uint32_t now_tick = uwTick;
 
-    // 初始化窗口
-    if (now_tick - window_start_tick >= ENCODER_FASTSET_TIME_WINDOW_MS)
+    uint32_t max_continuous_window = ENCODER_FASTSET_TIME_WINDOW_MS * ENCODER_FASTSET_MAX_LEVEL;
+
+    // 首次或超出最长连续时间则重置序列
+    if (window_start_tick == 0 || (uint32_t)(now_tick - window_start_tick) > max_continuous_window)
     {
-        // 新窗口
         window_start_tick = now_tick;
-        if (count_in_window <= ENCODER_FASTSET_FAST_THRESHOLD)
-        {
-            fast_level = 0; // 慢速
-        }
-        else
-        {
-            fast_level++;
-            if (fast_level > 3)
-                fast_level = 3;
-        }
         count_in_window = 1;
     }
     else
     {
-        count_in_window++;
-        // 判断是否达到快速阈值
-        if (count_in_window > ENCODER_FASTSET_FAST_THRESHOLD)
-        {
-            if (fast_level == 0)
-                fast_level = 1;
-        }
+        // 在连续序列内，增加计数并保持起始时间不变（以保证随次数增长等级上升）
+        if (count_in_window < 0xFFFF)
+            count_in_window++;
     }
 
-    // 返回不同速度的步进值
-    switch (fast_level)
-    {
-    case 0:
-        return ENCODER_FASTSET_SLOW_STEP; // 慢速
-    case 1:
-        return ENCODER_FASTSET_MID_STEP; // 第一秒快速
-    case 2:
-        return ENCODER_FASTSET_HIGH_STEP; // 第二秒持续快速
-    case 3:
-        return ENCODER_FASTSET_MAX_STEP; // 第三秒及以后最快
-    default:
-        return ENCODER_FASTSET_SLOW_STEP;
-    }
+    // 计算等级：每 ENCODER_FASTSET_BUCKET_SIZE 次提升一级
+    uint16_t level = (count_in_window + (ENCODER_FASTSET_BUCKET_SIZE - 1)) / ENCODER_FASTSET_BUCKET_SIZE;
+    if (level < 1)
+        level = 1;
+    if (level > ENCODER_FASTSET_MAX_LEVEL)
+        level = ENCODER_FASTSET_MAX_LEVEL;
+
+    uint8_t step = (uint8_t)(level * ENCODER_FASTSET_STEP_UNIT);
+    return step; // 返回 5,10,15,20 或 25
 }
 
 // 普通模式或预设温度模式
@@ -206,12 +186,16 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
-                AllStatus_S.flashSave_s.SleepDelayTime++;
+                AllStatus_S.flashSave_s.SleepDelayTime += app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MAX;
         }
         else
         {
-            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN)
-                AllStatus_S.flashSave_s.SleepDelayTime--;
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN + 5)
+                AllStatus_S.flashSave_s.SleepDelayTime -= app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MIN)
+                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
         }
         Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
         break;
