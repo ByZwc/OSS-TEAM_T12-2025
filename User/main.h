@@ -90,7 +90,7 @@
 
 // 积分限幅
 #define T210_MAX_PID_I 2250 // 60W
-#define T245_MAX_PID_I 3000 // 110W ±10W
+#define T245_MAX_PID_I 2000 // 110W ±10W
 #define T115_MAX_PID_I 750  // 30W
 
 // 功率限幅
@@ -129,7 +129,7 @@
 
 #define T115_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
 #define T210_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
-#define T245_SOLDERING_MAX_PID 35 // 最大功率输出温度阈值
+#define T245_SOLDERING_MAX_PID 30 // 最大功率输出温度阈值
 
 #define SOLDERING_ELECTRICITY_THRESHOLD 310 // 短路电压阈值
 #define SOLDERING_ELECTRICITY_OPEN 120      // 开路电压阈值
@@ -258,6 +258,7 @@ typedef struct
     float32_t Electricity;                    // 负载电流A
     float32_t Power;                          // 功率W
     float32_t PowerStatic;                    // 功率静态值W
+    uint32_t Sleep_PowerFilter;               // 休眠功率滤波值
 
     uint32_t Buz_ccr;             // 蜂鸣器PWM占空比
     uint8_t BuzFlag;              // 蜂鸣器启动状态

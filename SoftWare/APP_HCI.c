@@ -358,7 +358,7 @@ void app_Lcd_SolderingIcon_Blink_Task(void) // 函数调用周期（50ms）
 
 void APP_SolderingOpenStateCheck_Task(void) // 函数调用周期（500ms）
 {
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_OK || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
     {
         if (AllStatus_S.CurTemp >= SOLDERING_TEMP_OPEN)
         {
@@ -368,7 +368,7 @@ void APP_SolderingOpenStateCheck_Task(void) // 函数调用周期（500ms）
     }
     else
     {
-        if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
+        if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR)
             APP_shortCircuitProtection();
     }
 }

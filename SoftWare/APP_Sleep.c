@@ -11,7 +11,7 @@ static uint32_t APP_Sleep_GetAdcValue(void)
     return AllStatus_S.adc_value[SLEEP_NUM];
 }
 
-static float32_t APP_Sleep_PowerCheck(void)
+static uint32_t APP_Sleep_PowerCheck(void)
 {
     float tar = (float)AllStatus_S.flashSave_s.TarTemp;
     static float minT = 100.0f;
@@ -33,7 +33,7 @@ static float32_t APP_Sleep_TempCheck(void)
     static float minT = 100.0f;
     static float maxT = 450.0f;
     static float minRange = 2.0f;
-    static float maxRange = 3.0f;
+    static float maxRange = 4.0f;
 
     if (tar <= minT)
         return minRange;
@@ -43,7 +43,7 @@ static float32_t APP_Sleep_TempCheck(void)
     return minRange + (tar - minT) * (maxRange - minRange) / (maxT - minT);
 }
 
-// 休眠控制任务，每500ms调用一次
+// 休眠控制任务，每250ms调用一次
 void APP_Sleep_Control_Task(void)
 {
     static uint32_t last_adc_value = 0;
@@ -59,7 +59,8 @@ void APP_Sleep_Control_Task(void)
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
-        if (AllStatus_S.Power > APP_Sleep_PowerCheck())
+        AllStatus_S.Sleep_PowerFilter = APP_Sleep_PowerFilter();
+        if (AllStatus_S.Sleep_PowerFilter > APP_Sleep_PowerCheck())
         {
             stable_time_ms = 0;
         }
@@ -67,9 +68,7 @@ void APP_Sleep_Control_Task(void)
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
-        float temp_diff = AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp;
-        if (temp_diff < 0.0f)
-            temp_diff = -temp_diff;
+        float temp_diff = (float32_t)AllStatus_S.flashSave_s.TarTemp - AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM];
 
         if (temp_diff > APP_Sleep_TempCheck())
         {
@@ -135,16 +134,16 @@ void APP_Sleep_Control_Task(void)
     }
 }
 
-#define PWM_FILTER_ORDER 3
-#define PWM_FILTER_DEFAULT_RC_MS 5.0f             // 默认RC时间常数（ms）
-#define PWM_FILTER_DT_MS SLEEP_ADC_TASK_PERIOD_MS // 采样周期（ms），与任务周期一致
+#define PWM_FILTER_ORDER 3                        // 滤波器阶数
+#define PWM_FILTER_DEFAULT_RC_MS 200.0f           // RC时间常数（ms）
+#define PWM_FILTER_DT_MS SLEEP_ADC_TASK_PERIOD_MS // 采样周期（ms）
 
-uint32_t APP_Sleep_PwmOutFilter(void)
+uint32_t APP_Sleep_PowerFilter(void)
 {
     static float stage[PWM_FILTER_ORDER];
     static uint8_t initialized = 0;
 
-    float input = AllStatus_S.pid_s.pid_out;
+    float input = AllStatus_S.Power;
 
     float rc_ms = PWM_FILTER_DEFAULT_RC_MS;
     if (rc_ms <= 0.0f)
@@ -152,14 +151,13 @@ uint32_t APP_Sleep_PwmOutFilter(void)
 
     float dt = (float)PWM_FILTER_DT_MS;
 
-    // 计算一次积分器的alpha系数：alpha = dt / (RC + dt)
+    // alpha = dt / (RC + dt)
     float alpha = dt / (rc_ms + dt);
     if (alpha < 0.0f)
         alpha = 0.0f;
     else if (alpha > 1.0f)
         alpha = 1.0f;
 
-    // 首次调用时将各级初始化为输入值，避免上电突变
     if (!initialized)
     {
         for (int i = 0; i < PWM_FILTER_ORDER; ++i)

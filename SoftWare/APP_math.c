@@ -49,9 +49,9 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 
 //*****************************************************************************************/
 #define KALMAN_Q_MIN_TEMP 1.0f
-#define KALMAN_Q_MAX_TEMP 50.0f
-#define KALMAN_R_MIN_TEMP 12.0f
-#define KALMAN_R_MAX_TEMP 200.0f
+#define KALMAN_Q_MAX_TEMP 1.0f
+#define KALMAN_R_MIN_TEMP 10.0f
+#define KALMAN_R_MAX_TEMP 10.0f
 #define KALMAN_DIFF_THRESH_TEMP 20.0f
 static TYPEDEF_KALMAN_S kalman_temp_inst = {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -587,9 +587,9 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 45.0f;
+        AllStatus_S.pid_s.pid_pCoef = 90.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
-        AllStatus_S.pid_s.pid_dCoef = 25.0f;
+        AllStatus_S.pid_s.pid_dCoef = 35.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
@@ -678,7 +678,7 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
 
     if (AllStatus_S.OneState_TempOk)
     {
-        if ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod && ((cur_temp - tar_temp) < SOLDERING_TEMP_DISPLAY_REDUCE))
+        if ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod)
         {
             filtered[DISPLAY_FILTER_MUM - 1] = Tar; // 阶数切换
             filtered[DISPLAY_FILTER_MUM - 2] = Tar; // 阶数切换
