@@ -3,22 +3,21 @@
 // 休眠检测相关宏定义
 #define SLEEP_ADC_STABLE_RANGE 0x200 // ADC稳定范围
 #define SLEEP_ADC_TASK_PERIOD_MS 250 // 任务调用周期（ms）
-#define SLEEP_TEMP_RANGE 2.0f
 
 // 获取ADC值
-uint32_t APP_Sleep_GetAdcValue(void)
+static uint32_t APP_Sleep_GetAdcValue(void)
 {
     AllStatus_S.adc_value[SLEEP_NUM] = Drive_ADCConvert(SLEEP_NUM);
     return AllStatus_S.adc_value[SLEEP_NUM];
 }
 
-float APP_SleepPowerCheck(void)
+static float32_t APP_Sleep_PowerCheck(void)
 {
     float tar = (float)AllStatus_S.flashSave_s.TarTemp;
     static float minT = 100.0f;
     static float maxT = 450.0f;
     static float minP = 8.0f;
-    static float maxP = 20.0f;
+    static float maxP = 16.0f;
 
     if (tar <= minT)
         return minP;
@@ -26,6 +25,22 @@ float APP_SleepPowerCheck(void)
         return maxP;
 
     return minP + (tar - minT) * (maxP - minP) / (maxT - minT);
+}
+
+static float32_t APP_Sleep_TempCheck(void)
+{
+    float tar = (float)AllStatus_S.flashSave_s.TarTemp;
+    static float minT = 100.0f;
+    static float maxT = 450.0f;
+    static float minRange = 1.5f;
+    static float maxRange = 2.0f;
+
+    if (tar <= minT)
+        return minRange;
+    if (tar >= maxT)
+        return maxRange;
+
+    return minRange + (tar - minT) * (maxRange - minRange) / (maxT - minT);
 }
 
 // 休眠控制任务，每500ms调用一次
@@ -44,7 +59,7 @@ void APP_Sleep_Control_Task(void)
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
-        if (AllStatus_S.Power > APP_SleepPowerCheck())
+        if (AllStatus_S.Power > APP_Sleep_PowerCheck())
         {
             stable_time_ms = 0;
         }
@@ -56,7 +71,7 @@ void APP_Sleep_Control_Task(void)
         if (temp_diff < 0.0f)
             temp_diff = -temp_diff;
 
-        if (temp_diff > SLEEP_TEMP_RANGE)
+        if (temp_diff > APP_Sleep_TempCheck())
         {
             stable_time_ms = 0;
         }
@@ -120,7 +135,6 @@ void APP_Sleep_Control_Task(void)
     }
 }
 
-// PWM输出3阶RC滤波相关宏
 #define PWM_FILTER_ORDER 3
 #define PWM_FILTER_DEFAULT_RC_MS 5.0f             // 默认RC时间常数（ms）
 #define PWM_FILTER_DT_MS SLEEP_ADC_TASK_PERIOD_MS // 采样周期（ms），与任务周期一致
