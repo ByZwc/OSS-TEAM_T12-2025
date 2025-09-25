@@ -64,43 +64,72 @@ void app_exitSeting_Lcd(void)
 }
 
 // 编码器快速调温相关宏定义
-#define ENCODER_FASTSET_TIME_WINDOW_MS 500 // 基础时间窗口（ms），每增加一个等级扩展一个窗口
-#define ENCODER_FASTSET_BUCKET_SIZE 3       // 每个等级所需的次数（3次/等级）
-#define ENCODER_FASTSET_STEP_UNIT 5         // 步进单位（5,10,15,20,25）
-#define ENCODER_FASTSET_MAX_LEVEL 5         // 最大等级（1..5），对应最大返回值25
+#define ENCODER_FASTSET_WINDOW_MS 1000   // 统计窗口：1s
+#define ENCODER_FASTSET_RESET_GAP_MS 800 // 间隔>800ms清零
+#define ENCODER_FASTSET_THRESH_PER_SEC 3 // 每秒阈值：<=3为慢速
+#define ENCODER_FASTSET_STEP_BASE 5      // 基础步进：5
+#define ENCODER_FASTSET_MAX_LEVEL 4      // 加速等级数（对应步进：10/20/30/40）
+#define ENCODER_FASTSET_STEP_MAX (ENCODER_FASTSET_STEP_BASE * ENCODER_FASTSET_MAX_LEVEL * 2)
 
 uint8_t app_Encoder_FastSetTemp(void)
 {
-    static uint32_t last_tick = 0;   // 上次旋转时间
-    static uint16_t acc_count = 0;   // 在窗口内的连续旋转计数
+    static uint32_t last_tick = 0;   // 上次触发时间
+    static uint32_t win_start = 0;   // 当前1s窗口起点
+    static uint16_t win_count = 0;   // 当前窗口内触发次数
+    static uint8_t fast_sec_cnt = 0; // 已完成的“快速秒”（>3次/秒）的连续计数
 
-    uint32_t now_tick = uwTick;
-    uint32_t window = ENCODER_FASTSET_TIME_WINDOW_MS; // 500 ms
+    uint32_t now = uwTick;
 
-    if (last_tick == 0 || (now_tick - last_tick) > window)
+    if (last_tick == 0)
     {
-        acc_count = 1;
-    }
-    else
-    {
-        if (acc_count < 0xFFFF)
-            acc_count++;
-    }
-    last_tick = now_tick;
-
-    if (acc_count <= ENCODER_FASTSET_BUCKET_SIZE)
-    {
-        return ENCODER_FASTSET_STEP_UNIT; // 5
+        last_tick = now;
+        win_start = now;
+        win_count = 0;
+        fast_sec_cnt = 0;
     }
 
-    uint16_t level = (acc_count + (ENCODER_FASTSET_BUCKET_SIZE - 1)) / ENCODER_FASTSET_BUCKET_SIZE;
-    if (level < 1)
-        level = 1;
-    if (level > ENCODER_FASTSET_MAX_LEVEL)
-        level = ENCODER_FASTSET_MAX_LEVEL;
+    // 间隔大于复位阈值则清除记录
+    if ((uint32_t)(now - last_tick) > ENCODER_FASTSET_RESET_GAP_MS)
+    {
+        win_start = now;
+        win_count = 0;
+        fast_sec_cnt = 0;
+    }
 
-    uint8_t step = (uint8_t)(level * ENCODER_FASTSET_STEP_UNIT);
-    return step; 
+    // 跨过1秒窗口，结算上一窗口
+    if ((uint32_t)(now - win_start) >= ENCODER_FASTSET_WINDOW_MS)
+    {
+        if (win_count > ENCODER_FASTSET_THRESH_PER_SEC)
+        {
+            if (fast_sec_cnt < 255)
+                fast_sec_cnt++; // 记录连续“快速秒”
+        }
+        else
+        {
+            fast_sec_cnt = 0; // <=3次/秒：清除记录
+        }
+        win_count = 0;
+        win_start = now; // 以当前触发作为新窗口起点
+    }
+
+    // 计入当前窗口
+    win_count++;
+    last_tick = now;
+
+    // 计算步进：
+    // 无加速：5；从第二个“快速秒”开始：// 10,20,30,40
+    uint8_t step = ENCODER_FASTSET_STEP_BASE;
+    if (fast_sec_cnt > 0)
+    {
+        uint8_t lvl = fast_sec_cnt; // 1,2,3,4,...
+        if (lvl > ENCODER_FASTSET_MAX_LEVEL)
+            lvl = ENCODER_FASTSET_MAX_LEVEL;
+        step = ENCODER_FASTSET_STEP_BASE * lvl * 2; // 10,20,30,40
+    }
+    if (step > ENCODER_FASTSET_STEP_MAX)
+        step = ENCODER_FASTSET_STEP_MAX;
+
+    return step;
 }
 
 // 普通模式或预设温度模式
