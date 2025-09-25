@@ -16,8 +16,8 @@ static float32_t APP_Sleep_PowerCheck(void)
     float tar = (float)AllStatus_S.flashSave_s.TarTemp;
     static float minT = 100.0f;
     static float maxT = 450.0f;
-    static float minP = 5.0f;
-    static float maxP = 16.0f;
+    static float minP = 8.0f;
+    static float maxP = 20.0f;
 
     if (tar <= minT)
         return minP;
@@ -32,8 +32,8 @@ static float32_t APP_Sleep_TempCheck(void)
     float tar = (float)AllStatus_S.flashSave_s.TarTemp;
     static float minT = 100.0f;
     static float maxT = 450.0f;
-    static float minRange = 1.0f;
-    static float maxRange = 2.0f;
+    static float minRange = 2.0f;
+    static float maxRange = 3.0f;
 
     if (tar <= minT)
         return minRange;

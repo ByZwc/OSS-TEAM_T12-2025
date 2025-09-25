@@ -595,8 +595,8 @@ void APP_shortCircuitProtection(void)
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
-        AllStatus_S.pid_s.pid_iItemJoinTemp = 20;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 25;
+        AllStatus_S.pid_s.pid_iItemJoinTemp = 30;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 35;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率

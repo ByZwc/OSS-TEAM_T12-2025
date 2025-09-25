@@ -21,7 +21,7 @@ static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 
 #define PID_ISET_MIN_TEMP 100
 #define PID_ISET_MAX_TEMP 450
-#define PID_ISET_MIN_COEF 0.01f
+#define PID_ISET_MIN_COEF 0.03f
 #define PID_ISET_MAX_COEF 3.0f
 
 static float32_t app_pid_iSetRange(uint16_t TarTemp)
