@@ -35,7 +35,7 @@ ROMTableAddr = 0xE00FF000
 Target info:
 ------------
 Device: PY32F003x8
-VTarget = 3.254V
+VTarget = 3.150V
 State of Pins: TCK: 0, TDI: 0, TDO: 0, TMS: 1, TRES: 1, TRST: 0
 Hardware-Breakpoints: 4
 Software-Breakpoints: 8192
@@ -49,4 +49,4 @@ Erase Done.Programming Done.Verify OK.* JLink Info: Memory map 'before startup c
 * JLink Info: Reset: Reset device via AIRCR.SYSRESETREQ.
 * JLink Info: Memory map 'after startup completion point' is active
 Application running ...
-Flash Load finished at 09:15:37
+Flash Load finished at 10:25:22

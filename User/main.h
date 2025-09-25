@@ -199,7 +199,7 @@ typedef struct
     uint32_t outPriod_max;      // 滤波参数
     uint32_t diffTempOutMaxPWM; // 温差输出最大PWM
     uint32_t pid_iItemJoinTemp; // 积分引入温度
-    uint32_t pid_iItemQuitTemp; // 积分引入温度
+    uint32_t pid_iItemQuitTemp; // 积分引出温度
 } TYPEDEF_PID_parameter_S;
 
 typedef struct

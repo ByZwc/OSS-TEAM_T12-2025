@@ -19,6 +19,22 @@ static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
     return addCoef;
 }
 
+#define PID_ISET_MIN_TEMP 100
+#define PID_ISET_MAX_TEMP 450
+#define PID_ISET_MIN_COEF 0.01f
+#define PID_ISET_MAX_COEF 3.0f
+
+static float32_t app_pid_iSetRange(uint16_t TarTemp)
+{
+    // TarTemp: PID_ISET_MIN_TEMP -> PID_ISET_MIN_COEF, PID_ISET_MAX_TEMP -> PID_ISET_MAX_COEF, linear mapping
+    if (TarTemp <= PID_ISET_MIN_TEMP)
+        return PID_ISET_MIN_COEF;
+    if (TarTemp >= PID_ISET_MAX_TEMP)
+        return PID_ISET_MAX_COEF;
+    // Linear interpolation
+    return PID_ISET_MIN_COEF + (PID_ISET_MAX_COEF - PID_ISET_MIN_COEF) * (TarTemp - PID_ISET_MIN_TEMP) / (float)(PID_ISET_MAX_TEMP - PID_ISET_MIN_TEMP);
+}
+
 static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
 {
     float32_t diff = fabsf(CurTemp - TarTemp);
@@ -39,11 +55,16 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
     if (diff > AllStatus_S.pid_s.pid_iItemQuitTemp)
     {
         AllStatus_S.pid_s.pid_iItem = 0.0f;
-        AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
+        AllStatus_S.pid_s.pid_iCoef = 0.0f;
+        AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
     }
     else
     {
-        AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
+        if (diff < AllStatus_S.pid_s.pid_iItemJoinTemp)
+        {
+            AllStatus_S.pid_s.pid_iCoef = app_pid_iSetRange(TarTemp);
+            AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
+        }
     }
 
     app_pidOutCmd();
@@ -66,8 +87,10 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
 
         if (AllStatus_S.pid_s.pid_iItem > AllStatus_S.pid_s.pid_integration_max)
             AllStatus_S.pid_s.pid_iItem = AllStatus_S.pid_s.pid_integration_max;
-        if (AllStatus_S.pid_s.pid_iItem < (-AllStatus_S.pid_s.pid_integration_max))
-            AllStatus_S.pid_s.pid_iItem = -AllStatus_S.pid_s.pid_integration_max;
+        /* if (AllStatus_S.pid_s.pid_iItem < (-AllStatus_S.pid_s.pid_integration_max))
+            AllStatus_S.pid_s.pid_iItem = -AllStatus_S.pid_s.pid_integration_max; */
+        if (AllStatus_S.pid_s.pid_iItem < 0.0f)
+            AllStatus_S.pid_s.pid_iItem = 0.0f;
 
         AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_pItem + AllStatus_S.pid_s.pid_iItem + AllStatus_S.pid_s.pid_dItem;
 
