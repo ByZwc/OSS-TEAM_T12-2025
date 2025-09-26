@@ -53,7 +53,7 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
         break;
     }
 
-    if (diff > AllStatus_S.pid_s.pid_iItemQuitTemp)
+    if (CurTemp > (TarTemp + AllStatus_S.pid_s.pid_iItemQuitTemp))
     {
         AllStatus_S.pid_s.pid_iItem = 0.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
@@ -61,7 +61,7 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
     }
     else
     {
-        if (diff < AllStatus_S.pid_s.pid_iItemJoinTemp)
+        if (CurTemp > (TarTemp - AllStatus_S.pid_s.pid_iItemJoinTemp) && (CurTemp < TarTemp))
         {
             AllStatus_S.pid_s.pid_iCoef = app_pid_iSetRange(TarTemp);
             AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
