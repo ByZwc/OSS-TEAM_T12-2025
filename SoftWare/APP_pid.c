@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define PID_PCMD_DIFF_THRESHOLD 10.0f 
+#define PID_PCMD_DIFF_THRESHOLD 15.0f
 // P系数补偿
 static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 {
@@ -35,7 +35,7 @@ static float32_t app_pid_iSetRange(uint16_t TarTemp)
     return PID_ISET_MIN_COEF + (PID_ISET_MAX_COEF - PID_ISET_MIN_COEF) * (TarTemp - PID_ISET_MIN_TEMP) / (float)(PID_ISET_MAX_TEMP - PID_ISET_MIN_TEMP);
 }
 
-//积分引入引出
+// 积分引入引出
 static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
 {
     float32_t diff = fabsf(CurTemp - TarTemp);
@@ -129,7 +129,7 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
         if (AllStatus_S.pid_s.pid_out > AllStatus_S.pid_s.pid_outMax)
             AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_outMax;
 
-        if (CurTemp < (TarTemp - AllStatus_S.pid_s.diffTempOutMaxPWM) && TarTemp > 150) // 温度过低，强制输出最大功率
+        if ((CurTemp < (TarTemp - AllStatus_S.pid_s.diffTempOutMaxPWM)) && (TarTemp > 150)) // 温度过低，强制输出最大功率
             AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_outMax;
 
         Drive_MosSwitch_SetDuty(AllStatus_S.pid_s.pid_out);

@@ -587,15 +587,15 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 90.0f;
+        AllStatus_S.pid_s.pid_pCoef = 45.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
-        AllStatus_S.pid_s.pid_dCoef = 35.0f;
+        AllStatus_S.pid_s.pid_dCoef = 25.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
-        AllStatus_S.pid_s.pid_iItemJoinTemp = 20;
+        AllStatus_S.pid_s.pid_iItemJoinTemp = 24;
         AllStatus_S.pid_s.pid_iItemQuitTemp = 25;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
