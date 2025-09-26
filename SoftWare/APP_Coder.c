@@ -42,7 +42,6 @@ void app_Encoder_Task(void)
 {
     if (AllStatus_S.encoder_s.EncoderIsRun)
     {
-        Drive_BackLed_OnOff(1); // 点亮背光
         AllStatus_S.sleep_cnt = 0;
         AllStatus_S.encoder_s.EncoderIsRun = 0;
         TarTempSaveInFlash_temp = 0;
@@ -125,7 +124,6 @@ void app_ButtonCheck_Task(void)
         if (curButton)
         {
             Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-            Drive_BackLed_OnOff(1); // 点亮背光
             AllStatus_S.sleep_cnt = 0;
         }
     }

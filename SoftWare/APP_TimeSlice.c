@@ -38,10 +38,10 @@ void app_timeSlice_Task(void)
     if (uwTick - last_IconBlinkTick >= ICON_BLINK_TASK_INTERVAL)
     {
         last_IconBlinkTick += ICON_BLINK_TASK_INTERVAL;
-        app_IconBlink_Task();           // 选项闪烁
-        app_PcbTempProtect_Task();      // PCB温度过高保护
-        APP_TarTempSaveInFlash_Task();  // 保存历史温度（非预设模式下）
-        APP_SleepCloseBackLight_Task(); // 休眠关闭背光
+        app_IconBlink_Task();          // 选项闪烁
+        app_PcbTempProtect_Task();     // PCB温度过高保护
+        APP_TarTempSaveInFlash_Task(); // 保存历史温度（非预设模式下）
+        // APP_SleepCloseBackLight_Task(); // 休眠关闭背光
     }
 
     if (uwTick - last_ButtonTick >= BUTTON_TASK_INTERVAL)
@@ -53,5 +53,6 @@ void app_timeSlice_Task(void)
         app_Lcd_SolderingIcon_Blink_Task();   // 烙铁头图标闪烁任务
         Drive_DisplayLcd_sendData_Task();     // LCD显示信息发送任务
     }
+    APP_SleepBackLight_Task();   // 休眠背光亮度任务
     app_Samp_electricity_Task(); // 采样负载电流任务
 }
