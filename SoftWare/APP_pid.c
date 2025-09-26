@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define PID_PCMD_DIFF_THRESHOLD 5.0f // 超过此温差才增加P系数
+#define PID_PCMD_DIFF_THRESHOLD 15.0f // 超过此温差才增加P系数
 
 static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 {
@@ -70,6 +70,22 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
     app_pidOutCmd();
 }
 
+#define MAX_POWER_MIN_TEMP 100
+#define MAX_POWER_MAX_TEMP 450
+#define MAX_POWER_MIN_VALUE 1000
+#define MAX_POWER_MAX_VALUE 10000
+
+static uint16_t app_maxPowerControl(uint16_t TarTemp)
+{
+    // TarTemp: MAX_POWER_MIN_TEMP -> MAX_POWER_MIN_VALUE, MAX_POWER_MAX_TEMP -> MAX_POWER_MAX_VALUE, linear mapping
+    if (TarTemp <= MAX_POWER_MIN_TEMP)
+        return MAX_POWER_MIN_VALUE;
+    if (TarTemp >= MAX_POWER_MAX_TEMP)
+        return MAX_POWER_MAX_VALUE;
+    // Linear interpolation
+    return MAX_POWER_MIN_VALUE + (uint16_t)(((TarTemp - MAX_POWER_MIN_TEMP) * (MAX_POWER_MAX_VALUE - MAX_POWER_MIN_VALUE)) / (MAX_POWER_MAX_TEMP - MAX_POWER_MIN_TEMP));
+}
+
 void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
 {
     float32_t difValue;
@@ -113,7 +129,7 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
             AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_outMax;
 
         if (CurTemp < (TarTemp - AllStatus_S.pid_s.diffTempOutMaxPWM))
-            AllStatus_S.pid_s.pid_out = AllStatus_S.pid_s.pid_outMax;
+            AllStatus_S.pid_s.pid_out = app_maxPowerControl(TarTemp);
 
         Drive_MosSwitch_SetDuty(AllStatus_S.pid_s.pid_out);
     }
