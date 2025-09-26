@@ -640,7 +640,7 @@ static void app_GetAdcVlaue_soldering(void)
     AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] = APP_kalmanFilter_solderingTemp(AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM], AllStatus_S.flashSave_s.TarTemp);
     AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];
 
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR)
+    if (AllStatus_S.SolderingState != SOLDERING_STATE_OK && AllStatus_S.SolderingState != SOLDERING_STATE_SLEEP)
     {
         AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
     }

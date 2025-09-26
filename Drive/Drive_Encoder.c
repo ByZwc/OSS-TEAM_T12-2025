@@ -26,7 +26,7 @@ void Drive_Encoder_Init(void)
 }
 
 
-#define ENCODER_DEBOUNCE_MS 100
+#define ENCODER_DEBOUNCE_MS 50
 
 void EXTI4_15_IRQHandler(void)
 {
@@ -34,7 +34,7 @@ void EXTI4_15_IRQHandler(void)
     static uint32_t last_tick = 0;
     uint8_t curr_direction;
 
-    // 100ms内触发两次则清空中断并立即返回，每100ms只允许触发一次
+    // 50ms内触发两次则清空中断并立即返回，每50ms只允许触发一次
     if ((uwTick - last_tick) < ENCODER_DEBOUNCE_MS)
     {
         __HAL_GPIO_EXTI_CLEAR_IT(ENCODER_PIN_B);
