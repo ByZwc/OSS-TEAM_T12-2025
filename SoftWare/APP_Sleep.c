@@ -1,7 +1,7 @@
 #include "main.h"
 
 // 休眠检测相关宏定义
-#define SLEEP_ADC_STABLE_RANGE 0x200 // ADC稳定范围
+#define SLEEP_ADC_STABLE_RANGE 0x300 // ADC稳定范围
 #define SLEEP_ADC_TASK_PERIOD_MS 250 // 任务调用周期（ms）
 
 // 获取ADC值
