@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define PID_PCMD_DIFF_THRESHOLD 15.0f // 超过此温差才增加P系数
+#define PID_PCMD_DIFF_THRESHOLD 5.0f // 超过此温差才增加P系数
 
 static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 {
@@ -22,7 +22,7 @@ static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 #define PID_ISET_MIN_TEMP 100
 #define PID_ISET_MAX_TEMP 450
 #define PID_ISET_MIN_COEF 0.05f
-#define PID_ISET_MAX_COEF 5.0f
+#define PID_ISET_MAX_COEF 3.0f
 
 static float32_t app_pid_iSetRange(uint16_t TarTemp)
 {

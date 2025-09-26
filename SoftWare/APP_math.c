@@ -595,8 +595,8 @@ void APP_shortCircuitProtection(void)
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
-        AllStatus_S.pid_s.pid_iItemJoinTemp = 30;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 35;
+        AllStatus_S.pid_s.pid_iItemJoinTemp = 20;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 20;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
@@ -684,6 +684,7 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
             filtered[DISPLAY_FILTER_MUM - 2] = Tar; // 阶数切换
             filtered[DISPLAY_FILTER_MUM - 3] = Tar; // 阶数切换
             filtered[DISPLAY_FILTER_MUM - 4] = Tar; // 阶数切换
+            filtered[DISPLAY_FILTER_MUM - 5] = Tar; // 阶数切换
         }
         if (!oneState)
         {
@@ -715,9 +716,9 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
     }
 
     if (AllStatus_S.OneState_TempOk && ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod_max))
-        return filtered[DISPLAY_FILTER_MUM - 1];
+        return filtered[DISPLAY_FILTER_MUM - 1] + 0.5f;
     else
-        return filtered[3];
+        return filtered[4];
 }
 
 #define KALMAN_BASE_Q 4.0f       // 过程噪声协方差（加热时）

@@ -76,7 +76,6 @@ void APP_Sleep_Control_Task(void)
         }
     }
 
-    // 首次赋值（使用初始化标志，避免与合法0值混淆）
     static uint8_t last_initialized = 0;
     if (!last_initialized)
     {
@@ -84,7 +83,6 @@ void APP_Sleep_Control_Task(void)
         last_initialized = 1;
     }
 
-    // 判断ADC值是否在稳定范围内（先计算绝对差，避免无符号下溢）
     {
         uint32_t diff = (cur_adc_value >= last_adc_value) ? (cur_adc_value - last_adc_value) : (last_adc_value - cur_adc_value);
         if (diff <= SLEEP_ADC_STABLE_RANGE)
@@ -135,9 +133,12 @@ void APP_Sleep_Control_Task(void)
 }
 
 #define PWM_FILTER_ORDER 3                        // 滤波器阶数
-#define PWM_FILTER_DEFAULT_RC_MS 200.0f           // RC时间常数（ms）
+#define PWM_FILTER_DEFAULT_RC_MS 500.0f           // RC时间常数（ms）
 #define PWM_FILTER_DT_MS SLEEP_ADC_TASK_PERIOD_MS // 采样周期（ms）
-
+/*
+- 截止频率约 0.32Hz
+- 截止点总衰减约 -9dB
+*/
 uint32_t APP_Sleep_PowerFilter(void)
 {
     static float stage[PWM_FILTER_ORDER];
