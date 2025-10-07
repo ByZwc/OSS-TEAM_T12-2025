@@ -473,25 +473,3 @@ void app_SolderingTempDisplay(void)
         }
     }
 }
-
-void APP_SleepCloseBackLight_Task(void)
-{
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
-    {
-        if (AllStatus_S.sleep_cnt < 61)
-            AllStatus_S.sleep_cnt++;
-
-        if (AllStatus_S.sleep_cnt == TIME_TO_CLOSE_BACKLIGHT)
-        {
-            if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
-            {
-                Drive_BackLed_OnOff(0); // 关闭背光
-                Drive_Buz_OnOff(BUZ_1S, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-            }
-        }
-    }
-    else
-    {
-        AllStatus_S.sleep_cnt = 0;
-    }
-}

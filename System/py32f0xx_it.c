@@ -83,8 +83,6 @@ void SysTick_Handler(void)
   HAL_IncTick();
 }
 
-
-
 /******************************************************************************/
 /* PY32F0xx Peripheral Interrupt Handlers                                     */
 /* Add here the Interrupt Handlers for the used peripherals.                  */

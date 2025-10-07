@@ -9,8 +9,7 @@
 #define BACKLED_GPIO_SPEED     GPIO_SPEED_FREQ_HIGH
 
 extern void Drive_BackLed_Init(void);
-
 void Drive_BackLed_OnOff(uint8_t OnOff);
-
+void Drive_BackLed_PWMOut(void);
 #endif
 

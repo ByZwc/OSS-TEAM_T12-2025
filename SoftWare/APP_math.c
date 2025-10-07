@@ -48,42 +48,64 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 }
 
 //*****************************************************************************************/
-#define KALMAN_Q_MIN_TEMP 1.0f
-#define KALMAN_Q_MAX_TEMP 1.0f
-#define KALMAN_R_MIN_TEMP 10.0f
-#define KALMAN_R_MAX_TEMP 10.0f
-#define KALMAN_DIFF_THRESH_TEMP 20.0f
-static TYPEDEF_KALMAN_S kalman_temp_inst = {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+// 温度卡尔曼滤波自适应(残差驱动)
+#define KALMAN_TEMP_Q_MIN 0.01f
+#define KALMAN_TEMP_Q_MAX 5.00f
+#define KALMAN_TEMP_R_MIN 0.5f
+#define KALMAN_TEMP_R_MAX 10.0f
+#define KALMAN_TEMP_RESID_ALPHA 0.05f
+#define KALMAN_TEMP_RESID_THRESH_HIGH 60.0f
+#define KALMAN_TEMP_RESID_EPS 1e-6f
+
+static TYPEDEF_KALMAN_S kalman_temp_inst = {
+    .x = 0.0f,
+    .p = 1.0f,
+    .diff = 0.0f,
+    .q = KALMAN_TEMP_Q_MIN,
+    .r = KALMAN_TEMP_R_MAX,
+    .k = 0.0f};
 
 float32_t APP_kalmanFilter_solderingTemp(float32_t input, float32_t target)
 {
+    // 超限保护: 直接同步状态
     if (input > SOLDERING_TEMP_OPEN)
     {
-        // 温度超限，直接重置滤波结果
         kalman_temp_inst.x = input;
         kalman_temp_inst.p = 1.0f;
         return kalman_temp_inst.x;
     }
 
-    // 采样与设定温度差异
-    /* kalman_temp_inst.diff = fabsf(input - target);
+    // 1) 残差
+    float32_t resid = input - kalman_temp_inst.x;
+    float32_t abs_resid = fabsf(resid);
 
-    if (kalman_temp_inst.diff < KALMAN_DIFF_THRESH_TEMP)
-    {
-        kalman_temp_inst.q = KALMAN_Q_MIN_TEMP + (KALMAN_Q_MAX_TEMP - KALMAN_Q_MIN_TEMP) * (kalman_temp_inst.diff / KALMAN_DIFF_THRESH_TEMP);
-        kalman_temp_inst.r = KALMAN_R_MIN_TEMP + (KALMAN_R_MAX_TEMP - KALMAN_R_MIN_TEMP) * (kalman_temp_inst.diff / KALMAN_DIFF_THRESH_TEMP);
-    }
-    else
-    { */
-    kalman_temp_inst.q = KALMAN_Q_MAX_TEMP;
-    kalman_temp_inst.r = KALMAN_R_MAX_TEMP;
-    //}
+    // 2) 残差绝对值指数平均(平滑幅度)
+    static float32_t resid_abs_avg = 0.0f;
+    resid_abs_avg += KALMAN_TEMP_RESID_ALPHA * (abs_resid - resid_abs_avg);
 
+    // 3) 归一化映射(0~1)
+    float32_t ratio = resid_abs_avg / (KALMAN_TEMP_RESID_THRESH_HIGH + KALMAN_TEMP_RESID_EPS);
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+    if (ratio < 0.0f)
+        ratio = 0.0f;
+
+    // 4) 残差驱动Q、R自适应
+    kalman_temp_inst.q = KALMAN_TEMP_Q_MIN + (KALMAN_TEMP_Q_MAX - KALMAN_TEMP_Q_MIN) * ratio;
+    kalman_temp_inst.r = KALMAN_TEMP_R_MIN + (KALMAN_TEMP_R_MAX - KALMAN_TEMP_R_MIN) * ratio;
+
+    // 5) 预测
     kalman_temp_inst.p += kalman_temp_inst.q;
+
+    // 6) 更新
     kalman_temp_inst.k = kalman_temp_inst.p / (kalman_temp_inst.p + kalman_temp_inst.r);
-    kalman_temp_inst.x += kalman_temp_inst.k * (input - kalman_temp_inst.x);
+    kalman_temp_inst.x += kalman_temp_inst.k * resid;
     kalman_temp_inst.p *= (1.0f - kalman_temp_inst.k);
 
+    // 7) 保存残差(调试/观察)
+    kalman_temp_inst.diff = resid;
+
+    (void)target;
     return kalman_temp_inst.x;
 }
 
@@ -180,22 +202,55 @@ uint16_t FIR_LowpassFilter(uint16_t limit_adc)
         return (uint16_t)sum;
 }
 
-// 电流卡尔曼滤波器参数宏定义
-#define KALMAN_ELE_Q_MIN 0.05f  // 最小过程噪声
-#define KALMAN_ELE_R_MAX 200.0f // 最大测量噪声
+// 电流卡尔曼滤波自适应参数宏定义(残差驱动)
+#define KALMAN_ELE_Q_MIN 0.02f               // 最小过程噪声Q
+#define KALMAN_ELE_Q_MAX 1.20f               // 最大过程噪声Q
+#define KALMAN_ELE_R_MIN 5.0f                // 最小测量噪声R
+#define KALMAN_ELE_R_MAX 200.0f              // 最大测量噪声R
+#define KALMAN_ELE_RESID_ALPHA 0.05f         // 残差绝对值指数平均系数
+#define KALMAN_ELE_RESID_THRESH_HIGH 4095.0f // 残差上限映射阈值(>即认为完全失配)
+#define KALMAN_ELE_RESID_EPS 1e-6f           // 防止除0
 
-// 电流卡尔曼滤波器
-static TYPEDEF_KALMAN_S kalman_ele_inst = {0.0f, 1.0f, 0.0f, KALMAN_ELE_Q_MIN, KALMAN_ELE_R_MAX, 0.0f};
+// 结构: x(估计), p(协方差), diff(备用/残差), q, r, k
+static TYPEDEF_KALMAN_S kalman_ele_inst = {
+    .x = 0.0f,
+    .p = 1.0f,
+    .diff = 0.0f,
+    .q = KALMAN_ELE_Q_MIN,
+    .r = KALMAN_ELE_R_MAX,
+    .k = 0.0f};
 
 float32_t APP_KalmanFilter_Ele(float32_t measured_ele)
 {
-    // 预测
+    // 1. 计算残差(创新)
+    float32_t resid = measured_ele - kalman_ele_inst.x;
+    float32_t abs_resid = fabsf(resid);
+
+    // 2. 残差绝对值指数平均(平滑残差幅度)
+    static float32_t resid_abs_avg = 0.0f;
+    resid_abs_avg += KALMAN_ELE_RESID_ALPHA * (abs_resid - resid_abs_avg);
+
+    // 3. 归一化映射(0~1)
+    float32_t ratio = resid_abs_avg / (KALMAN_ELE_RESID_THRESH_HIGH + KALMAN_ELE_RESID_EPS);
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+
+    // 4. 自适应调整Q、R
+    // 残差大 -> Q、R 同时升高(系统/测量都不稳定)
+    // 残差小 -> Q、R 同时降低(信号稳定, 提升跟踪精度)
+    kalman_ele_inst.q = KALMAN_ELE_Q_MIN + (KALMAN_ELE_Q_MAX - KALMAN_ELE_Q_MIN) * ratio;
+    kalman_ele_inst.r = KALMAN_ELE_R_MIN + (KALMAN_ELE_R_MAX - KALMAN_ELE_R_MIN) * ratio;
+
+    // 5. 预测
     kalman_ele_inst.p += kalman_ele_inst.q;
 
-    // 计算卡尔曼增益并更新
+    // 6. 更新
     kalman_ele_inst.k = kalman_ele_inst.p / (kalman_ele_inst.p + kalman_ele_inst.r);
-    kalman_ele_inst.x += kalman_ele_inst.k * (measured_ele - kalman_ele_inst.x);
+    kalman_ele_inst.x += kalman_ele_inst.k * resid;
     kalman_ele_inst.p *= (1.0f - kalman_ele_inst.k);
+
+    // 7. 保存残差(可用于调试)
+    kalman_ele_inst.diff = resid;
 
     return kalman_ele_inst.x;
 }
@@ -587,16 +642,16 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 45.0f;
+        AllStatus_S.pid_s.pid_pCoef = 100.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
-        AllStatus_S.pid_s.pid_dCoef = 25.0f;
+        AllStatus_S.pid_s.pid_dCoef = 0.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
-        AllStatus_S.pid_s.pid_iItemJoinTemp = 24;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 25;
+        AllStatus_S.pid_s.pid_iItemJoinTemp = 25;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 10;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
@@ -611,11 +666,11 @@ static void app_GetAdcVlaue_soldering(void)
 {
     Drive_MosSwitch_OFF(); // 关断MOS输出
 
-    // HAL_Delay(1);
-    for (uint16_t i = 0; i < 0x8FF; i++)
+    HAL_Delay(1);
+    /* for (uint16_t i = 0; i < 0x8FF; i++)
     {
         __NOP();
-    }
+    } */
 
     AllStatus_S.adc_value[SOLDERING_TEMP210_NUM] = Drive_ADCConvert(SOLDERING_TEMP210_NUM);
     // AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
@@ -631,31 +686,29 @@ static void app_GetAdcVlaue_soldering(void)
         AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] = app_soldering_T12_adcTurnToTemp(AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
         break;
     }
-
-    /* if (AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] > SOLDERING_TEMP_OPEN)
-    {
-        AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM] = SOLDERING_TEMP_OPEN;
-    } */
-
     AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] = APP_kalmanFilter_solderingTemp(AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM], AllStatus_S.flashSave_s.TarTemp);
     AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];
-
-    if (AllStatus_S.SolderingState != SOLDERING_STATE_OK && AllStatus_S.SolderingState != SOLDERING_STATE_SLEEP)
-    {
-        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
-    }
-    else
-    {
-        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(AllStatus_S.CurTemp, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
-    }
 }
 
 void app_pid_Task(void)
 {
-    if (AllStatus_S.SolderingState != SOLDERING_STATE_SLEEP_DEEP)
+    int32_t TarTemp; // 目标温度（带补偿）
+    int32_t DisTemp; // 显示温度（不带补偿）
+
+    TarTemp = AllStatus_S.flashSave_s.TarTemp + AllStatus_S.flashSave_s.calibration_temp;
+    DisTemp = AllStatus_S.flashSave_s.calibration_temp;
+
+    app_GetAdcVlaue_soldering(); // 获取烙铁头温度
+    app_pidControl(TarTemp, AllStatus_S.CurTemp);
+
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_OPEN_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
     {
-        app_GetAdcVlaue_soldering(); // 获取烙铁头温度
-        app_pidControl(AllStatus_S.flashSave_s.TarTemp + AllStatus_S.flashSave_s.calibration_temp, AllStatus_S.CurTemp);
+        app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
+        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = 0;
+    }
+    else
+    {
+        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(AllStatus_S.CurTemp - DisTemp, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
     }
 }
 
@@ -681,14 +734,16 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
     {
         if ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod)
         {
-            for (int i = 1; i <= DISPLAY_FILTER_RESET_COUNT; i++) {
-                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 阶数切换
+            for (int i = 1; i <= DISPLAY_FILTER_RESET_COUNT; i++)
+            {
+                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
         }
         if (!oneState)
         {
-            for (int i = 1; i <= DISPLAY_FILTER_MUM; i++) {
-                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 阶数切换
+            for (int i = 1; i <= DISPLAY_FILTER_MUM; i++)
+            {
+                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
             oneState = 1;
         }

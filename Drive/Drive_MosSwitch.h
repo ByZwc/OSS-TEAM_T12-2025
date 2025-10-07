@@ -5,6 +5,7 @@ extern void Drive_MosSwitch_OFF(void);
 extern void Drive_MosSwitch210_PWMOut(void);
 extern void Drive_MosSwitch245_PWMOut(void);
 extern void Drive_MosSwitch_SetDuty(uint16_t duty);
+void Drive_MosPWMoutMode(void);
 
 #define MAX_PWM_PRIOD 10000
 

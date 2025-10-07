@@ -7,8 +7,31 @@
 // 获取ADC值
 static uint32_t APP_Sleep_GetAdcValue(void)
 {
-    AllStatus_S.adc_value[SLEEP_NUM] = Drive_ADCConvert(SLEEP_NUM);
-    return AllStatus_S.adc_value[SLEEP_NUM];
+    /* 采样率: 4Hz (任务周期250ms)
+       目标截止频率: 0.5Hz
+    */
+    uint32_t raw = Drive_ADCConvert(SLEEP_NUM);
+    AllStatus_S.adc_value[SLEEP_NUM] = raw;
+
+    static uint8_t initialized = 0;
+    static float filtered = 0.0f;
+
+    static const float dt = 0.25f; // 1 / 4Hz
+    static const float fc = 0.5f;  // 截止频率
+    static const float RC = 1.0f / (2.0f * 3.1415926f * fc);
+    static const float alpha = dt / (RC + dt);
+
+    if (!initialized)
+    {
+        filtered = (float)raw;
+        initialized = 1;
+    }
+    else
+    {
+        filtered += alpha * ((float)raw - filtered);
+    }
+
+    return (uint32_t)(filtered + 0.5f);
 }
 
 static uint32_t APP_Sleep_PowerCheck(void)
@@ -94,9 +117,9 @@ void APP_Sleep_Control_Task(void)
             // 达到休眠判定时间，进入休眠
             if (stable_time_ms >= AllStatus_S.flashSave_s.SleepDelayTime * 1000)
             {
-                AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP;
                 if (!oneState)
                 {
+                    AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP;
                     Lcd_icon_onOff(icon_soldering, 1);
                     app_pidOutCmd();
                     Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
@@ -176,27 +199,25 @@ uint32_t APP_Sleep_PowerFilter(void)
     return (uint32_t)(out + 0.5f);
 }
 
-#define SLEEP_BACKLIGHT_FLASH_PERIOD_MS 10 // 背光闪烁周期（ms）
-#define SLEEP_BACKLIGHT_ON_TIME_MS 3       // 10ms周期内点亮时间（ms）
-
 void APP_SleepBackLight_Task(void)
 {
-    static uint16_t ms_counter = 0;
+    static uint8_t last_state = 0;
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP &&
         AllStatus_S.flashSave_s.BackgroundLightOnoff)
     {
-        ms_counter++;
-        if (ms_counter >= SLEEP_BACKLIGHT_FLASH_PERIOD_MS)
-            ms_counter = 0;
-        if (ms_counter < SLEEP_BACKLIGHT_ON_TIME_MS)
-            Drive_BackLed_OnOff(1); // 点亮背光
-        else
-            Drive_BackLed_OnOff(0); // 熄灭背光
+        if (last_state != 1)
+        {
+            Drive_BackLed_PWMOut();
+            last_state = 1;
+        }
     }
     else
     {
-        ms_counter = 0;
-        Drive_BackLed_OnOff(1); // 常亮背光
+        if (last_state != 2)
+        {
+            Drive_BackLed_Init(); // 常亮背光
+            last_state = 2;
+        }
     }
 }

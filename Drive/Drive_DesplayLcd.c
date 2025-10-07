@@ -117,14 +117,14 @@ static void Drive_DisplayLcd_sendMessage(void) // 数据
 
 void Drive_DisplayLcd_sendData_Task(void)
 {
-    // uint32_t primask_bit;
+    uint32_t primask_bit;
 
     HG1612_CS_DOWM();
     Drive_DisplayLcd_delay();
 
     /* Enter critical section */
-    // primask_bit = __get_PRIMASK();
-    //__disable_irq();
+    primask_bit = __get_PRIMASK();
+    __disable_irq();
 
     Drive_DisplayLcd_sendAddr(SEG9ADDR);
 
@@ -133,5 +133,5 @@ void Drive_DisplayLcd_sendData_Task(void)
     DisplayLcd_CsColse();
 
     /* Exit critical section: restore previous priority mask */
-    //__set_PRIMASK(primask_bit);
+    __set_PRIMASK(primask_bit);
 }
