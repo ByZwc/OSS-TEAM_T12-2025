@@ -181,10 +181,10 @@ static void Lcd_SetNum_D3(uint16_t num)
     Lcd_smgArray_Dowm[0] = 0;
 
     Lcd_smgArray_Dowm[2] = smg_hexArray[ge];
-    if (bai || shi) // 有百位或十位时，十位显示
-        Lcd_smgArray_Dowm[1] = smg_hexArray[shi];
-    if (bai)
-        Lcd_smgArray_Dowm[0] = smg_hexArray[bai];
+    // if (bai || shi) // 有百位或十位时，十位显示
+    Lcd_smgArray_Dowm[1] = smg_hexArray[shi];
+    // if (bai)
+    Lcd_smgArray_Dowm[0] = smg_hexArray[bai];
 }
 
 void Lcd_smgDowm3_SetNum(uint16_t num, uint8_t OnOff)

@@ -50,11 +50,11 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 //*****************************************************************************************/
 // 温度卡尔曼滤波自适应(残差驱动)
 #define KALMAN_TEMP_Q_MIN 0.01f
-#define KALMAN_TEMP_Q_MAX 5.00f
-#define KALMAN_TEMP_R_MIN 0.5f
-#define KALMAN_TEMP_R_MAX 10.0f
+#define KALMAN_TEMP_Q_MAX 1.00f
+#define KALMAN_TEMP_R_MIN 0.1f
+#define KALMAN_TEMP_R_MAX 20.0f
 #define KALMAN_TEMP_RESID_ALPHA 0.05f
-#define KALMAN_TEMP_RESID_THRESH_HIGH 60.0f
+#define KALMAN_TEMP_RESID_THRESH_HIGH 100.0f
 #define KALMAN_TEMP_RESID_EPS 1e-6f
 
 static TYPEDEF_KALMAN_S kalman_temp_inst = {
@@ -642,7 +642,7 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 100.0f;
+        AllStatus_S.pid_s.pid_pCoef = 50.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
         AllStatus_S.pid_s.pid_dCoef = 0.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
@@ -651,7 +651,7 @@ void APP_shortCircuitProtection(void)
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
         AllStatus_S.pid_s.pid_iItemJoinTemp = 25;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 10;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 25;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率
