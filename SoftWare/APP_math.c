@@ -683,19 +683,16 @@ static void app_GetAdcVlaue_soldering(void)
         break;
     }
     AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] = APP_kalmanFilter_solderingTemp(AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM], AllStatus_S.flashSave_s.TarTemp);
-    AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];
+    // AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];
 }
 
 void app_pid_Task(void)
 {
-    int32_t TarTemp; // 目标温度（带补偿）
-    int32_t DisTemp; // 显示温度（不带补偿）
-
-    TarTemp = AllStatus_S.flashSave_s.TarTemp + AllStatus_S.flashSave_s.calibration_temp;
-    DisTemp = AllStatus_S.flashSave_s.calibration_temp;
-
     app_GetAdcVlaue_soldering(); // 获取烙铁头温度
-    app_pidControl(TarTemp, AllStatus_S.CurTemp);
+
+    AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] - AllStatus_S.flashSave_s.calibration_temp;
+
+    app_pidControl(AllStatus_S.flashSave_s.TarTemp, AllStatus_S.CurTemp);
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP || AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR)
     {
@@ -704,7 +701,7 @@ void app_pid_Task(void)
     }
     else
     {
-        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(AllStatus_S.CurTemp - DisTemp, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
+        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(AllStatus_S.CurTemp, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
     }
 }
 

@@ -128,7 +128,9 @@ void APP_Sleep_Control_Task(void)
                     oneState = 1;
                 }
                 if (AllStatus_S.CurTemp < SLEEP_DEEP_TEMP_RANGE)
+                {
                     AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
+                }
             }
         }
         else
