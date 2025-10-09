@@ -30,9 +30,9 @@ void Drive_BackLed_PWMOut(void)
   GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
 
   HAL_GPIO_Init(BACKLED_GPIO_PORT, &GPIO_InitStruct);
-  Drive_MosPWMoutMode();
+  Drive_MosPWMoutMode(6 - 1);
 
-  TIM3->CCR2 = 1000;
+  TIM3->CCR2 = 2000;
 }
 
 void Drive_BackLed_OnOff(uint8_t OnOff)

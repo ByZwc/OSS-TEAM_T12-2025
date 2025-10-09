@@ -642,7 +642,7 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 100.0f;
+        AllStatus_S.pid_s.pid_pCoef = 50.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
         AllStatus_S.pid_s.pid_dCoef = 0.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;

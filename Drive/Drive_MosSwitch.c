@@ -18,7 +18,6 @@ void Drive_MosSwitch_OFF(void)
 
     HAL_GPIO_Init(T245_GPIO_PORT, &GPIO_InitStruct);
     HAL_GPIO_WritePin(T245_GPIO_PORT, T245_GPIO_PIN, GPIO_PIN_RESET);
-
 }
 
 /**
@@ -26,7 +25,7 @@ void Drive_MosSwitch_OFF(void)
  * @param  None
  * @retval None
  */
-static void Drive_TIM3_INIT(void)
+static void Drive_TIM3_INIT(uint16_t Prescaler)
 {
     __HAL_RCC_TIM3_CLK_ENABLE();
 
@@ -37,7 +36,7 @@ static void Drive_TIM3_INIT(void)
     TimHandle.Init.Period = MAX_PWM_PRIOD;
 
     /* Prescaler value */
-    TimHandle.Init.Prescaler = 48 - 1;
+    TimHandle.Init.Prescaler = Prescaler;
 
     /* Clock not divided */
     TimHandle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -94,9 +93,9 @@ static void Drive_TIM3_PWM(void)
     }
 }
 
-void Drive_MosPWMoutMode(void)
+void Drive_MosPWMoutMode(uint16_t Prescaler)
 {
-    Drive_TIM3_INIT();
+    Drive_TIM3_INIT(Prescaler);
 
     Drive_TIM3_PWM();
 
@@ -126,7 +125,7 @@ void Drive_MosSwitch210_PWMOut(void)
     // HAL_GPIO_DeInit(GPIOA, GPIO_PIN_7);
     if (!AllStatus_S.PwmIsInitComplete)
     {
-        Drive_MosPWMoutMode();
+        Drive_MosPWMoutMode(48 - 1);
         AllStatus_S.PwmIsInitComplete = 1;
     }
 }
@@ -149,7 +148,7 @@ void Drive_MosSwitch245_PWMOut(void)
     // HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5);
     if (!AllStatus_S.PwmIsInitComplete)
     {
-        Drive_MosPWMoutMode();
+        Drive_MosPWMoutMode(48 - 1);
         AllStatus_S.PwmIsInitComplete = 1;
     }
 }
