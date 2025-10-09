@@ -1,6 +1,7 @@
 #include "main.h"
 
 #define PID_TASK_INTERVAL 20
+#define BUZZ_TASK_INTERVAL 10
 #define ENCODER_TASK_INTERVAL 50
 #define BUTTON_TASK_INTERVAL 100
 #define SLEEP_TASK_INTERVAL 250
@@ -8,6 +9,7 @@
 void app_timeSlice_Task(void)
 {
     static uint32_t last_pidTick = 0;
+    static uint32_t last_buzzTick = 0;
     static uint32_t last_sleepTick = 0;
     static uint32_t last_encoderTick = 0;
     static uint32_t last_IconBlinkTick = 0;
@@ -18,7 +20,12 @@ void app_timeSlice_Task(void)
         last_pidTick += PID_TASK_INTERVAL;
         app_pid_Task();                     // PID任务
         app_GetAdcVlaue_electricity_Task(); // 估计电流任务
-        app_Buz_Task();                     // 蜂鸣器任务
+    }
+
+    if (uwTick - last_buzzTick >= BUZZ_TASK_INTERVAL)
+    {
+        last_buzzTick += BUZZ_TASK_INTERVAL;
+        app_Buz_Task(); // 蜂鸣器任务
     }
 
     if (uwTick - last_encoderTick >= ENCODER_TASK_INTERVAL)
@@ -41,7 +48,7 @@ void app_timeSlice_Task(void)
         app_IconBlink_Task();          // 选项闪烁
         app_PcbTempProtect_Task();     // PCB温度过高保护
         APP_TarTempSaveInFlash_Task(); // 保存历史温度（非预设模式下）
-        APP_SleepBackLight_Task();   // 休眠背光亮度任务
+        APP_SleepBackLight_Task();     // 休眠背光亮度任务
     }
 
     if (uwTick - last_ButtonTick >= BUTTON_TASK_INTERVAL)

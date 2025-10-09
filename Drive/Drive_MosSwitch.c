@@ -37,7 +37,7 @@ static void Drive_TIM3_INIT(void)
     TimHandle.Init.Period = MAX_PWM_PRIOD;
 
     /* Prescaler value */
-    TimHandle.Init.Prescaler = 6 - 1;
+    TimHandle.Init.Prescaler = 120 - 1;
 
     /* Clock not divided */
     TimHandle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
