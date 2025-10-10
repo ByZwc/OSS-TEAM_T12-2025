@@ -705,9 +705,9 @@ void app_pid_Task(void)
     }
 }
 
-#define DISPLAY_FILTER_BASE_ALPHA 0.05f // 基础滤波系数
+#define DISPLAY_FILTER_BASE_ALPHA 0.03f // 基础滤波系数
 #define DISPLAY_FILTER_MIN_ALPHA 0.01f  // 最小滤波系数
-#define DISPLAY_FILTER_MAX_ALPHA 0.10f  // 最大滤波系数
+#define DISPLAY_FILTER_MAX_ALPHA 0.05f  // 最大滤波系数
 #define DISPLAY_FILTER_MUM 6            // 阶数
 #define RC_FILTER_DIFF_MAX 25.0f
 #define RC_FILTER_DIFF_MIN 10.0f
